@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            DELETE FROM timeline_entities\n            WHERE timeline_id=? AND entity_id=?\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "1063a67afa8600ae2dd1acd2e640d51bd030908f65ff61294357f707e3813f61"
+}

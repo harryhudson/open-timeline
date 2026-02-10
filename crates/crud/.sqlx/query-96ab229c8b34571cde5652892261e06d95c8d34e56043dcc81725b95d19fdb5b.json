@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "DELETE FROM timeline_entities;",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": []
+  },
+  "hash": "96ab229c8b34571cde5652892261e06d95c8d34e56043dcc81725b95d19fdb5b"
+}

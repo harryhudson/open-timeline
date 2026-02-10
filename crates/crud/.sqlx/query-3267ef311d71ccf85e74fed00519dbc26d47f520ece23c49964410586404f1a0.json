@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            UPDATE entity_tags\n            SET\n                name = ?,\n                value = ?\n            WHERE \n                    (name IS ? OR name = ?)\n                AND\n                    value = ?;\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 5
+    },
+    "nullable": []
+  },
+  "hash": "3267ef311d71ccf85e74fed00519dbc26d47f520ece23c49964410586404f1a0"
+}

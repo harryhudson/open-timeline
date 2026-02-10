@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "DELETE FROM subtimelines;",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": []
+  },
+  "hash": "569f341f771f3e5ade580e8b76e88c84ded8f006e540d407943ffa35aad1a5bf"
+}

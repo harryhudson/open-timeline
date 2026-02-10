@@ -1,0 +1,26 @@
+{
+  "db_name": "SQLite",
+  "query": "\n                SELECT\n                    id AS \"id: OpenTimelineId\",\n                    name AS \"name: Name\"\n                FROM entities\n                WHERE name LIKE CONCAT('%', ?, '%')\n                ORDER BY RANDOM()\n                LIMIT ?\n            ",
+  "describe": {
+    "columns": [
+      {
+        "name": "id: OpenTimelineId",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "name: Name",
+        "ordinal": 1,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "fc09286b3c88bba7d7cb2bdac658f529cca3a6feeb99eaf7de88e35f19d06b97"
+}

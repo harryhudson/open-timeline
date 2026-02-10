@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n                INSERT INTO subtimelines (timeline_parent_id, timeline_child_id) \n                VALUES (?, ?)\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "3d462c7dacf155a8859e6b52efe1c111302f267bc16b45bfa6a85dd62a69d63c"
+}

@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            INSERT INTO timeline_entities (timeline_id, entity_id)\n            VALUES (?, ?)\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "d54a820e174a9dd4b4cde949f71d178a5103eb6dc5af98ba9691c43238eac142"
+}

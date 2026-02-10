@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            SELECT id AS \"id: OpenTimelineId\"\n            FROM entities\n        ",
+  "describe": {
+    "columns": [
+      {
+        "name": "id: OpenTimelineId",
+        "ordinal": 0,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "e3f9df526f4bcaad7cdf16369c3435c85ceedcbbfdd148005844dbfca286d03e"
+}

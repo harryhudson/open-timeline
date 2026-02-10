@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            SELECT timeline_child_id AS \"timeline_child_id: OpenTimelineId\"\n            FROM subtimelines\n            WHERE timeline_parent_id=?\n        ",
+  "describe": {
+    "columns": [
+      {
+        "name": "timeline_child_id: OpenTimelineId",
+        "ordinal": 0,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "d9a8f56cf8577a25aa79883236d8cfa427a5c77759fa9c76564712fed374d8c8"
+}

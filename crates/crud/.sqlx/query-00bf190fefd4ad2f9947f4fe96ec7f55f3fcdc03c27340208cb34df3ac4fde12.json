@@ -1,0 +1,26 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            SELECT\n                name AS \"name: TagName\",\n                value AS \"value: TagValue\"\n            FROM timeline_tags\n            WHERE timeline_id=?\n        ",
+  "describe": {
+    "columns": [
+      {
+        "name": "name: TagName",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "value: TagValue",
+        "ordinal": 1,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      true,
+      false
+    ]
+  },
+  "hash": "00bf190fefd4ad2f9947f4fe96ec7f55f3fcdc03c27340208cb34df3ac4fde12"
+}

@@ -1,0 +1,26 @@
+{
+  "db_name": "SQLite",
+  "query": "\n                    SELECT\n                        name AS \"name: TagName\",\n                        value AS \"value: TagValue\"\n                    FROM entity_tags\n                    WHERE entity_id=?\n                ",
+  "describe": {
+    "columns": [
+      {
+        "name": "name: TagName",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "value: TagValue",
+        "ordinal": 1,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      true,
+      false
+    ]
+  },
+  "hash": "2403ab4cdb56cb5742041790fac9ec9bfb52312d8a0c435dc20b52560926610a"
+}

@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            SELECT name AS \"name: Name\"\n            FROM entities\n            WHERE id=?\n        ",
+  "describe": {
+    "columns": [
+      {
+        "name": "name: Name",
+        "ordinal": 0,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "450d5ac2e9519ebc5ae6aea201a4288fb7687cfa9c59bb5ea80dbebe47c6d8b8"
+}

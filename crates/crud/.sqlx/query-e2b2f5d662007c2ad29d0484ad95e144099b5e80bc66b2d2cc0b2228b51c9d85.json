@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            SELECT COUNT(*) AS count\n            FROM timeline_entities\n            WHERE timeline_id=? AND entity_id=?\n        ",
+  "describe": {
+    "columns": [
+      {
+        "name": "count",
+        "ordinal": 0,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "e2b2f5d662007c2ad29d0484ad95e144099b5e80bc66b2d2cc0b2228b51c9d85"
+}

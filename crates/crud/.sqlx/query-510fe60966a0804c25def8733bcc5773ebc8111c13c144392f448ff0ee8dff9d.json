@@ -1,0 +1,26 @@
+{
+  "db_name": "SQLite",
+  "query": "\n                SELECT DISTINCT\n                    id AS \"id: OpenTimelineId\",\n                    name AS \"name: Name\"\n                FROM entities\n            ",
+  "describe": {
+    "columns": [
+      {
+        "name": "id: OpenTimelineId",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "name: Name",
+        "ordinal": 1,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "510fe60966a0804c25def8733bcc5773ebc8111c13c144392f448ff0ee8dff9d"
+}

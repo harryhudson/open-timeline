@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "\n                SELECT id AS \"id: OpenTimelineId\"\n                FROM entities\n                WHERE end_year IS NOT NULL\n                ORDER BY RANDOM()\n                LIMIT ?\n            ",
+  "describe": {
+    "columns": [
+      {
+        "name": "id: OpenTimelineId",
+        "ordinal": 0,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "9f5d9353e43fe21e46fce4835b896e7935eef70cd71415a072bb356d87ba811d"
+}

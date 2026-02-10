@@ -14,7 +14,7 @@ resolver = "3"
 
 [workspace.dependencies]
 open-timeline-core = { version = "0.1.0", path = "crates/core" }
-open-timeline-crud = { version = "0.1.1", path = "crates/crud" }
+open-timeline-crud = { version = "0.1.2", path = "crates/crud" }
 open-timeline-games = { version = "0.1.0", path = "crates/games" }
 open-timeline-gui = { version = "0.1.0", path = "crates/gui" }
 open-timeline-gui-core = { version = "0.1.0", path = "crates/gui-core" }
