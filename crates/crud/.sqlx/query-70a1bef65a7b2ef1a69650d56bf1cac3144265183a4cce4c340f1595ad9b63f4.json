@@ -1,0 +1,26 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            SELECT\n                timeline_entities.timeline_id AS \"timeline_id: OpenTimelineId\",\n                timelines.name AS \"timeline_name: Name\"\n            FROM timeline_entities\n            JOIN timelines ON\n                timeline_entities.timeline_id = timelines.id\n            WHERE entity_id=?\n        ",
+  "describe": {
+    "columns": [
+      {
+        "name": "timeline_id: OpenTimelineId",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "timeline_name: Name",
+        "ordinal": 1,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "70a1bef65a7b2ef1a69650d56bf1cac3144265183a4cce4c340f1595ad9b63f4"
+}

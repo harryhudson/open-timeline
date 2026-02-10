@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            SELECT name AS \"name: Name\"\n            FROM timelines\n            WHERE id=?\n        ",
+  "describe": {
+    "columns": [
+      {
+        "name": "name: Name",
+        "ordinal": 0,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "b87459f97a35bcf2144a357ec401a1ae83affc7d2cbd661886915895657bcc01"
+}

@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            DELETE FROM subtimelines\n            WHERE\n                    timeline_parent_id=?\n                OR\n                    timeline_child_id=?\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "0e7fd3cab4dd8e1e4a55dd66b79e6ac79c73f7128685e96632671ca5a8f5a80a"
+}

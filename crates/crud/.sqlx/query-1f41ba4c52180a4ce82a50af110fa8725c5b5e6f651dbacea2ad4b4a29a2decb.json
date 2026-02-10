@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            SELECT bool_expression\n            FROM timelines\n            WHERE id=?\n        ",
+  "describe": {
+    "columns": [
+      {
+        "name": "bool_expression",
+        "ordinal": 0,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "1f41ba4c52180a4ce82a50af110fa8725c5b5e6f651dbacea2ad4b4a29a2decb"
+}

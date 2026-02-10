@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n                    UPDATE entities\n                    SET name = ?\n                    WHERE id = ?\n                ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "e15f42e660471d22c9ccfa3d09811ec9daa17d9f206da1fd37c02d942a4aada0"
+}

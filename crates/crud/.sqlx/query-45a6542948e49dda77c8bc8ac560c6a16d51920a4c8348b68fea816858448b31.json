@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            DELETE FROM timeline_tags\n            WHERE timeline_id=?\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": []
+  },
+  "hash": "45a6542948e49dda77c8bc8ac560c6a16d51920a4c8348b68fea816858448b31"
+}

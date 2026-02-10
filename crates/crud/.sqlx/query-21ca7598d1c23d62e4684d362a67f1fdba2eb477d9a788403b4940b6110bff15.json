@@ -1,0 +1,62 @@
+{
+  "db_name": "SQLite",
+  "query": "\n                SELECT\n                    id AS \"id: OpenTimelineId\",\n                    name AS \"name: Name\",\n                    start_year,\n                    start_month,\n                    start_day,\n                    end_year,\n                    end_month,\n                    end_day\n                FROM entities\n                WHERE id=?\n            ",
+  "describe": {
+    "columns": [
+      {
+        "name": "id: OpenTimelineId",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "name: Name",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "start_year",
+        "ordinal": 2,
+        "type_info": "Integer"
+      },
+      {
+        "name": "start_month",
+        "ordinal": 3,
+        "type_info": "Integer"
+      },
+      {
+        "name": "start_day",
+        "ordinal": 4,
+        "type_info": "Integer"
+      },
+      {
+        "name": "end_year",
+        "ordinal": 5,
+        "type_info": "Integer"
+      },
+      {
+        "name": "end_month",
+        "ordinal": 6,
+        "type_info": "Integer"
+      },
+      {
+        "name": "end_day",
+        "ordinal": 7,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "21ca7598d1c23d62e4684d362a67f1fdba2eb477d9a788403b4940b6110bff15"
+}

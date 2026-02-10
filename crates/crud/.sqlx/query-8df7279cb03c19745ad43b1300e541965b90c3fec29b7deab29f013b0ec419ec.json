@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n                INSERT INTO entities\n                (\n                    id,\n                    name,\n                    start_year,\n                    start_month,\n                    start_day,\n                    end_year,\n                    end_month,\n                    end_day\n                )\n                VALUES (?, ?, ?, ?, ?, ?, ?, ?)\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 8
+    },
+    "nullable": []
+  },
+  "hash": "8df7279cb03c19745ad43b1300e541965b90c3fec29b7deab29f013b0ec419ec"
+}

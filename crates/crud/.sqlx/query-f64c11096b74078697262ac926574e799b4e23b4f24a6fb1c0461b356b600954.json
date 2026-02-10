@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            DELETE FROM entity_tags\n            WHERE \n                    (name IS ? OR name = ?)\n                AND\n                    value = ?;\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "f64c11096b74078697262ac926574e799b4e23b4f24a6fb1c0461b356b600954"
+}

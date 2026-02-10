@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n                    UPDATE timelines\n                    SET\n                        name = ?,\n                        bool_expression = ?\n                    WHERE id = ?\n                ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "9ae70f1ef70aeb613b1e937a8b373bb98c4d1a5e07a4622534a899a937ca79e7"
+}

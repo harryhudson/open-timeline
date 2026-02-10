@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            SELECT entity_id AS \"entity_id: OpenTimelineId\"\n            FROM timeline_entities\n            WHERE timeline_id=?\n        ",
+  "describe": {
+    "columns": [
+      {
+        "name": "entity_id: OpenTimelineId",
+        "ordinal": 0,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "e6c9d691408e93f620ac640ae384aa3e16b044c1a63e1da9d21901ad7114f3d8"
+}

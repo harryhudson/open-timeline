@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            DELETE FROM timeline_tags\n            WHERE \n                    (name IS ? OR name = ?)\n                AND\n                    value = ?;\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "89c531fcdd23634b84e6379e2e77b5dc0a2adf9d338849c3f88fd85d5fcfcb3e"
+}

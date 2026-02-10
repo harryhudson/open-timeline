@@ -1,0 +1,26 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            SELECT DISTINCT\n                timelines.id AS \"id: OpenTimelineId\",\n                timelines.name AS \"name: Name\"\n            FROM timelines\n            JOIN timeline_tags ON timelines.id = timeline_tags.timeline_id\n            WHERE\n            (\n                timeline_tags.name = ?\n                OR (timeline_tags.name IS NULL AND ? IS NULL)\n            )\n            AND timeline_tags.value = ?\n        ",
+  "describe": {
+    "columns": [
+      {
+        "name": "id: OpenTimelineId",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "name: Name",
+        "ordinal": 1,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "d67c79c1cf0f30034ad8dcd07a0a8c682a316b865e36ca7696a2d88f47eee528"
+}

@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            INSERT INTO timelines (id, name, bool_expression)\n            VALUES (?, ?, ?)\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "ddb0e599592778c351e16c1c759c841f1bbce2108b42f5b0b23b5831b2951155"
+}
