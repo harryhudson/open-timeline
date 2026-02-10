@@ -1,0 +1,44 @@
+[package]
+name = "open-timeline-bins"
+version = "0.1.0"
+edition = "2024"
+
+[package.metadata.bundle.bin.gui]
+name = "OpenTimeline"
+identifier = "org.open-timeline.open-timeline"
+version = "0.1.0"
+icon = [
+    "assets/icons/icon_16.png",
+    "assets/icons/icon_24.png",
+    "assets/icons/icon_32.png",
+    "assets/icons/icon_48.png",
+    "assets/icons/icon_64.png",
+    "assets/icons/icon_128.png",
+    "assets/icons/icon_256.png",
+    "assets/icons/icon_512.png",
+    "assets/icons/icon.icns",
+    "assets/icons/icon.ico",
+]
+
+[package.metadata.bundle.bin.gui.linux]
+icon = "assets/icons/icon_256.png"
+
+[package.metadata.bundle.bin.gui.mac]
+icon = "assets/icons/icon.icns"
+
+[package.metadata.bundle.bin.gui.windows]
+icon = "assets/icons/icon.ico"
+
+[dependencies]
+open-timeline-crud = { workspace = true  }
+open-timeline-gui = { workspace = true }
+open-timeline-www-api = { workspace = true }
+
+axum = "0.8.1"
+clap = { version = "4.5.26", features = ["derive"] }
+eframe = "0.33.3"
+image = "0.24"
+log = "0.4.25"
+simplelog = "0.12.2"
+sqlx = { version = "0.8.3", default-features = false, features = ["runtime-tokio", "sqlite", "migrate"] }
+tokio = { version = "1.42.0", default-features = false, features = ["macros", "rt-multi-thread", "sync"] }

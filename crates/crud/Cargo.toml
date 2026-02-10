@@ -1,0 +1,26 @@
+[package]
+name = "open-timeline-crud"
+version = "0.1.1"
+edition = "2024"
+license = "GPL-3.0-or-later"
+description = "OpenTimeline CRUD"
+repository = "https://github.com/harryhudson/open-timeline"
+homepage = "https://github.com/harryhudson/open-timeline"
+include = [
+    "src/**",
+    "Cargo.toml",
+    "migrations/**"
+]
+
+[dependencies]
+open-timeline-core = { workspace = true, features = ["sqlx"] }
+
+bool-tag-expr = { version = "0.1.0-beta.1",  features = ["sqlx"] }
+async-trait = "0.1.89"
+derive_more = { version = "2.0.1", features = ["into_iterator", "index"] }
+log = "0.4.25"
+serde = { version = "1.0.217", features = ["derive"] }
+serde_json = "1.0.135"
+sqlx = { version = "0.8.3", default-features = false, features = ["macros", "runtime-tokio", "sqlite", "migrate"] }
+thiserror = "2.0.11"
+tokio = { version = "1.42.0", default-features = false, features = ["macros", "rt-multi-thread"] }

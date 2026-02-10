@@ -1,0 +1,28 @@
+[workspace]
+members = [
+    "bins",
+    "crates/core",
+    "crates/crud",
+    "crates/games",
+    "crates/gui",
+    "crates/gui-core",
+    "crates/macros",
+    "crates/renderer",
+    "crates/www-api"
+]
+resolver = "3"
+
+[workspace.dependencies]
+open-timeline-core = { version = "0.1.0", path = "crates/core" }
+open-timeline-crud = { version = "0.1.1", path = "crates/crud" }
+open-timeline-games = { version = "0.1.0", path = "crates/games" }
+open-timeline-gui = { version = "0.1.0", path = "crates/gui" }
+open-timeline-gui-core = { version = "0.1.0", path = "crates/gui-core" }
+open-timeline-macros = { version = "0.1.0", path = "crates/macros" }
+open-timeline-renderer = { version = "0.1.0", path = "crates/renderer" }
+open-timeline-www-api = { version = "0.1.0", path = "crates/www-api" }
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true

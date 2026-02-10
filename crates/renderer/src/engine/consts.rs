@@ -1,0 +1,16 @@
+// SPDX-License-Identifier: MIT
+
+//!
+//! Consts
+//!
+
+pub const MIN_ZOOM: f64 = 0.5;
+pub const MAX_ZOOM: f64 = 5.0;
+
+pub const MIN_DATETIME_SCALE: f64 = 1.0;
+pub const MAX_DATETIME_SCALE: f64 = 50.0;
+
+pub const DATETIME_SCALE_THRESHOLD_SHOW_YEARS: f64 = 8.0;
+pub const DATETIME_SCALE_THRESHOLD_SHOW_FULL_YEARS: f64 = 12.0;
+pub const DATETIME_SCALE_THRESHOLD_SHOW_YEAR_LINES_PARTAL: f64 = 3.0;
+pub const DATETIME_X_THRESHOLD_SHOW_YEAR_LINES_FULL: f64 = 5.0;

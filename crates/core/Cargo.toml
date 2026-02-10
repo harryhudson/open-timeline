@@ -1,0 +1,30 @@
+[package]
+name = "open-timeline-core"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+description = "OpenTimeline core"
+repository = "https://github.com/harryhudson/open-timeline"
+homepage = "https://github.com/harryhudson/open-timeline"
+
+[features]
+default = []
+sqlx = ["dep:sqlx", "bool-tag-expr/sqlx"]
+wasm = []
+
+[dependencies]
+open-timeline-macros = { workspace = true }
+
+bool-tag-expr = { version = "0.1.0-beta.1" }
+derive_more = { version = "2.0.1", features = ["display", "index"] }
+rand = "0.8.5"
+serde = { version = "1.0.217", features = ["derive"] }
+serde_json = "1.0.145"
+thiserror = "2.0.11"
+uuid = { version = "1.18.1", features = ["serde", "v4", "js"] }
+
+[dependencies.sqlx]
+version = "0.8.3"
+optional = true
+default-features = false
+features = ["macros", "sqlite", "uuid", "runtime-tokio", "migrate"]

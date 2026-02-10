@@ -1,0 +1,47 @@
+[
+  {
+    "id": "7c9e0e32-436e-44e9-bc9f-cb985006c17e",
+    "name": "People",
+    "bool_expr": "person",
+    "entities": [
+      {
+        "id": "9db472a5-609d-4d70-b6c6-c4e91a7d9a4c",
+        "name": "Alice"
+      }
+    ],
+    "subtimelines": [
+      {
+        "id": "951f41dd-614d-49e4-9d23-ca0899619868",
+        "name": "Men"
+      }
+    ],
+    "tags": [
+      {
+        "name": null,
+        "value": "people"
+      }
+    ]
+  },
+  {
+    "id": "951f41dd-614d-49e4-9d23-ca0899619868",
+    "name": "Men",
+    "bool_expr": null,
+    "entities": [
+      {
+        "id": "1c92c9f9-2e7e-4c29-b9bc-6339533047d4",
+        "name": "Dave"
+      },
+      {
+        "id": "929b2ff4-2288-4ab6-a399-22fddb2871f9",
+        "name": "Bob"
+      }
+    ],
+    "subtimelines": null,
+    "tags": [
+      {
+        "name": null,
+        "value": "men"
+      }
+    ]
+  }
+]

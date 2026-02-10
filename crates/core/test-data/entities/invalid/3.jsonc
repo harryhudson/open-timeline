@@ -1,0 +1,25 @@
+// This OpenTimeline entity is invalid because it has no start date
+{
+  "id": "1c92c9f9-2e7e-4c29-b9bc-6339533047d4",
+  "name": "Dave",
+  "start": null,
+  "end": {
+    "day": null,
+    "month": null,
+    "year": 2000
+  },
+  "tags": [
+    {
+      "name": null,
+      "value": "banker"
+    },
+    {
+      "name": null,
+      "value": "person"
+    },
+    {
+      "name": "nationality",
+      "value": "welsh"
+    }
+  ]
+}

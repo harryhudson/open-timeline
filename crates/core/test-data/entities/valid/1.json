@@ -1,0 +1,82 @@
+[
+  {
+    "id": "1c92c9f9-2e7e-4c29-b9bc-6339533047d4",
+    "name": "Dave",
+    "start": {
+      "day": null,
+      "month": null,
+      "year": 1980
+    },
+    "end": {
+      "day": null,
+      "month": null,
+      "year": 2000
+    },
+    "tags": [
+      {
+        "name": null,
+        "value": "banker"
+      },
+      {
+        "name": null,
+        "value": "person"
+      },
+      {
+        "name": "nationality",
+        "value": "welsh"
+      }
+    ]
+  },
+  {
+    "id": "929b2ff4-2288-4ab6-a399-22fddb2871f9",
+    "name": "Bob",
+    "start": {
+      "day": null,
+      "month": null,
+      "year": 1945
+    },
+    "end": {
+      "day": null,
+      "month": null,
+      "year": 1955
+    },
+    "tags": [
+      {
+        "name": null,
+        "value": "person"
+      },
+      {
+        "name": "nationality",
+        "value": "irish"
+      }
+    ]
+  },
+  {
+    "id": "9db472a5-609d-4d70-b6c6-c4e91a7d9a4c",
+    "name": "Alice",
+    "start": {
+      "day": 5,
+      "month": 6,
+      "year": 1950
+    },
+    "end": {
+      "day": 21,
+      "month": 6,
+      "year": 1998
+    },
+    "tags": [
+      {
+        "name": null,
+        "value": "person"
+      },
+      {
+        "name": "job",
+        "value": "lawyer"
+      },
+      {
+        "name": "nationality",
+        "value": "english"
+      }
+    ]
+  }
+]

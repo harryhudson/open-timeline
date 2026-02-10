@@ -1,0 +1,16 @@
+[package]
+name = "open-timeline-macros"
+version = "0.1.0"
+edition = "2024"
+license = "GPL-3.0-or-later"
+description = "OpenTimeline macros"
+repository = "https://github.com/harryhudson/open-timeline"
+homepage = "https://github.com/harryhudson/open-timeline"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+proc-macro2 = "1.0"
+quote = "1.0"
+syn = { version = "1.0", features = ["full"] }

@@ -1,0 +1,30 @@
+// This OpenTimeline entity is invalid because the 3rd tag is invalid due to its
+// containing spaces and capital letters
+{
+  "id": "1c92c9f9-2e7e-4c29-b9bc-6339533047d4",
+  "name": "Dave",
+  "start": {
+    "day": null,
+    "month": null,
+    "year": 1980
+  },
+  "end": {
+    "day": null,
+    "month": null,
+    "year": 2000
+  },
+  "tags": [
+    {
+      "name": null,
+      "value": "banker"
+    },
+    {
+      "name": null,
+      "value": "person"
+    },
+    {
+      "name": "Nationality is",
+      "value": "Welsh"
+    }
+  ]
+}

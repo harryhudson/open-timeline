@@ -1,0 +1,30 @@
+[package]
+name = "open-timeline-gui"
+version = "0.1.0"
+edition = "2024"
+license = "GPL-3.0-or-later"
+description = "OpenTimeline GUI"
+repository = "https://github.com/harryhudson/open-timeline"
+homepage = "https://github.com/harryhudson/open-timeline"
+
+[dependencies]
+open-timeline-core = { workspace = true }
+open-timeline-crud = { workspace = true }
+open-timeline-games = { workspace = true }
+open-timeline-gui-core = { workspace = true }
+open-timeline-renderer = { workspace = true }
+
+bool-tag-expr = { version = "0.1.0-beta.1" }
+directories-next = "2.0.0"
+eframe = "0.33.3"
+egui_commonmark = "0.20"
+egui-dropdown = "0.14.0"
+egui_extras = "0.33.3"
+image = "0.24"
+log = "0.4.25"
+rfd = "0.15.3"
+serde = { version = "1.0.217", features = ["derive"] }
+serde_json = "1.0.135"
+sqlx = { version = "0.8.3", default-features = false, features = ["macros", "runtime-tokio", "sqlite", "migrate"] }
+thiserror = "2.0.11"
+tokio = { version = "1.42.0", default-features = false, features = ["macros", "rt-multi-thread", "sync"] }
