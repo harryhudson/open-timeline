@@ -10,6 +10,13 @@ This project exists for 2 reasons:
 2. To add context to writings, in particular to online news.  Often when reading the news we forget or don't know the relevant history.  Sometimes a timeline is presented but is very limited, fixed, and not interactive.  We hope this project will plug that gap.
 
 
+## GUI Screenshots
+
+![Screenshot of desktop GUI timeline in light mode](assets/light.jpg "GUI timeline in light mode")
+![Screenshot of desktop GUI timeline in siphonophore mode](assets/siphonophore.jpg "GUI timeline in siphonophore mode")
+
+## Usage
+
 Requirements/dependencies:
 
 - `sqlite3`
