@@ -10,11 +10,6 @@ This project exists for 2 reasons:
 2. To add context to writings, in particular to online news.  Often when reading the news we forget or don't know the relevant history.  Sometimes a timeline is presented but is very limited, fixed, and not interactive.  We hope this project will plug that gap.
 
 
-## GUI Screenshots
-
-![Screenshot of desktop GUI timeline in light mode](assets/light.jpg "GUI timeline in light mode")
-![Screenshot of desktop GUI timeline in siphonophore mode](assets/siphonophore.jpg "GUI timeline in siphonophore mode")
-
 ## Usage
 
 Requirements/dependencies:
@@ -36,12 +31,16 @@ touch crates/crud/db/timeline.sqlite
 # Create the .env file
 echo "DATABASE_URL=sqlite:$PWD/crates/crud/db/timeline.sqlite" > .env
 
-# Install `sqlx` & setup the database
+# Install `sqlx`
 cargo install sqlx-cli
+
+# Setup the database
+cd crates/crud
 sqlx database setup
+cd -
 
 # Build `open-timeline-renderer` for WASM target for rendering timelines on the web
-cd renderer
+cd crates/renderer
 wasm-pack build --target web
 cd -
 
@@ -53,3 +52,9 @@ cargo build --release --bin db
 # Build the desktop GUI app bundle
 cargo-bundle --release --bin gui
 ```
+
+## GUI Screenshots
+
+<!-- ![Screenshot of desktop GUI windows](assets/screenshots/gui-windows.jpg "GUI application windows") -->
+![Screenshot of desktop GUI timeline in light mode](assets/screenshots/light.jpg "GUI timeline in light mode")
+![Screenshot of desktop GUI timeline in siphonophore mode](assets/screenshots/siphonophore.jpg "GUI timeline in siphonophore mode")
