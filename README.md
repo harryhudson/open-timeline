@@ -1,6 +1,8 @@
 # OpenTimeline
 
-*For the OpenTimeline dataset see [`harryhudson/open-timeline-data`](https://github.com/harryhudson/open-timeline-data)*
+*Dataset: [harryhudson/open-timeline-data](https://github.com/harryhudson/open-timeline-data)*
+
+*Website: [www.open-timeline.org](https://www.open-timeline.org)*
 
 ## About
 
@@ -55,6 +57,6 @@ cargo-bundle --release --bin gui
 
 ## GUI Screenshots
 
-<!-- ![Screenshot of desktop GUI windows](assets/screenshots/gui-windows.jpg "GUI application windows") -->
+![Screenshot of desktop GUI windows](assets/screenshots/windows.jpg "GUI application windows")
 ![Screenshot of desktop GUI timeline in light mode](assets/screenshots/light.jpg "GUI timeline in light mode")
 ![Screenshot of desktop GUI timeline in siphonophore mode](assets/screenshots/siphonophore.jpg "GUI timeline in siphonophore mode")
