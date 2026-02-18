@@ -18,7 +18,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 /// Handle a request to fetch entities whose name matches a partial name
-pub async fn handle_get_entities(
+pub async fn handle_get_entities_reduced(
     State(pool): State<Arc<Pool<Sqlite>>>,
     Query(params): Query<PartialNameQueryParams>,
 ) -> Result<Json<ReducedEntities>, ApiError> {

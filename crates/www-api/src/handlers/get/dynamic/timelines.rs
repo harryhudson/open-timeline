@@ -16,7 +16,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 /// Handle a request to fetch timelines whose name matches a partial name
-pub async fn handle_get_timelines(
+pub async fn handle_get_timelines_reduced(
     State(pool): State<Arc<Pool<Sqlite>>>,
     Query(params): Query<PartialNameQueryParams>,
 ) -> Result<Json<ReducedTimelines>, ApiError> {
