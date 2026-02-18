@@ -22,9 +22,11 @@ egui-dropdown = "0.14.0"
 egui_extras = "0.33.3"
 image = "0.24"
 log = "0.4.25"
+reqwest = { version = "0.13.2", features = ["json"] }
 rfd = "0.15.3"
 serde = { version = "1.0.217", features = ["derive"] }
 serde_json = "1.0.135"
 sqlx = { version = "0.8.3", default-features = false, features = ["macros", "runtime-tokio", "sqlite", "migrate"] }
 thiserror = "2.0.11"
 tokio = { version = "1.42.0", default-features = false, features = ["macros", "rt-multi-thread", "sync"] }
+tempdir = "0.3.7"

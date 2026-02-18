@@ -43,9 +43,13 @@ pub enum BackupRestoreMergeError {
     #[error(transparent)]
     Sqlx(#[from] sqlx::Error),
 
-    /// A JSON error occuered (most likely when reading a JSON file).
+    /// A JSON error occured (most likely when reading a JSON file).
     #[error(transparent)]
     SerdeJson(#[from] serde_json::Error),
+
+    /// An error when fetching from a web API.
+    #[error(transparent)]
+    Reqwest(#[from] reqwest::Error),
 }
 
 /// Backup the database to JSON
