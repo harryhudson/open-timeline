@@ -9,6 +9,8 @@ use bool_tag_expr::{BoolTagExpr, Tags};
 use serde::{Deserialize, Serialize};
 
 /// Represents the information needed for creating and updating a timeline
+///
+/// This is the datastructure used to backup & restore timelines
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct TimelineEdit {
     /// The timeline's ID
