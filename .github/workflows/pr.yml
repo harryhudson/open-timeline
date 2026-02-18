@@ -1,0 +1,86 @@
+#
+# Validate & test all OpenTimeline code
+#
+
+name: Validate & test
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  print-info:
+    name: Print info
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+         echo "User => ${{ github.actor }}"
+         echo "Event => ${{ github.event_name }}"
+         echo "Server => ${{ runner.os }}"
+         echo "Branch => ${{ github.ref }}"
+         echo "Repo => ${{ github.repository }}"
+         echo "Workspace => ${{ github.workspace }}"
+         echo "Status => ${{ job.status }}."
+         env
+
+  fmt:
+    name: Check formatting
+    runs-on: ubuntu-latest
+    steps:
+      # Setup
+      - name: Checkout the repo
+        uses: actions/checkout@v4
+      - name: Use the Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+      - name: Setup up a cache for Rust
+        uses: Swatinem/rust-cache@v2
+      # Run
+      - run: cargo fmt --all -- --check
+
+  test:
+    name: Run tests
+    runs-on: ubuntu-latest
+    needs: [fmt]
+    steps:
+      # Setup
+      - name: Checkout the repo
+        uses: actions/checkout@v4
+      - name: Use the Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+      - name: Setup up a cache for Rust
+        uses: Swatinem/rust-cache@v2
+      # Run
+      - name: Run the tests
+        run: |
+          cargo test --all --workspace --all-features --locked
+
+  build-open-timeline-renderer:
+    name: Build open-timeline-renderer WASM
+    runs-on: ubuntu-latest
+    needs: [test]
+    steps:
+      # Setup
+      - name: Checkout the repo
+        uses: actions/checkout@v4
+      - name: Use the Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+      - name: Setup up a cache for Rust
+        uses: Swatinem/rust-cache@v2
+      # Use WASM pack
+      - name: Use WASM pack
+        uses: jetli/wasm-pack-action@v0.4.0
+        with:
+          # Optional version of wasm-pack to install (eg. 'v0.9.1', 'latest')
+          version: 'latest'
+      # Build WASM open-timeline-renderer
+      - name: Build open-timeline-renderer WASM
+        run: |
+          cd crates/renderer
+          wasm-pack build --target web
+      # Upload artefact
+      - name: Upload open-timeline-renderer build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: open-timeline-renderer-pkg
+          path: ${{ github.workspace }}/crates/renderer/pkg

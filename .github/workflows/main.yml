@@ -1,14 +1,13 @@
 #
-# Validate, test, and build all OpenTimeline code
+# Build all OpenTimeline code
+#
+# Formatting & testing should have been run by the CI for PRs
 #
 
-name: All
+name: Build
 
 on:
   push:
-    branches:
-      - main
-  pull_request:
     branches:
       - main
 
@@ -27,51 +26,9 @@ jobs:
          echo "Status => ${{ job.status }}."
          env
 
-  fmt:
-    name: Check formatting
-    runs-on: ubuntu-latest
-    steps:
-      # Setup
-      - name: Checkout the repo
-        uses: actions/checkout@v4
-      - name: Use the Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-      - name: Setup up a cache for Rust
-        uses: Swatinem/rust-cache@v2
-      # Run
-      - run: cargo fmt --all -- --check
-
-  test:
-    name: Run tests
-    runs-on: ubuntu-latest
-    needs: [fmt]
-    steps:
-      # Setup
-      - name: Checkout the repo
-        uses: actions/checkout@v4
-      - name: Use the Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-      - name: Setup up a cache for Rust
-        uses: Swatinem/rust-cache@v2
-      - name: Setup the database
-        run: |
-          cargo install sqlx-cli
-          export DATABASE_URL=sqlite:$PWD/crates/crud/db/timeline.sqlite
-          cd crates/crud
-          mkdir -p db
-          touch db/timeline.sqlite
-          sqlx database setup
-          cd -
-      # Run
-      - name: Run the tests
-        run: |
-          export DATABASE_URL=sqlite:$PWD/crates/crud/db/timeline.sqlite
-          cargo test --all --workspace --all-features --locked
-
   build-open-timeline-renderer:
     name: Build open-timeline-renderer WASM
     runs-on: ubuntu-latest
-    needs: [test]
     steps:
       # Setup
       - name: Checkout the repo
@@ -101,7 +58,7 @@ jobs:
   build:
     name: Build all executables
     runs-on: ubuntu-latest
-    needs: [test]
+    needs: [build-open-timeline-renderer]
     steps:
       # Setup
       - name: Checkout the repo
@@ -110,19 +67,9 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
       - name: Setup up a cache for Rust
         uses: Swatinem/rust-cache@v2
-      - name: Setup the database
-        run: |
-          cargo install sqlx-cli
-          export DATABASE_URL=sqlite:$PWD/crates/crud/db/timeline.sqlite
-          cd crates/crud
-          mkdir -p db
-          touch db/timeline.sqlite
-          sqlx database setup
-          cd -
       # Run
       - name: Build OpenTimeline binaries
         run: |
-          export DATABASE_URL=sqlite:$PWD/crates/crud/db/timeline.sqlite
           cd bins
           cargo build --release --bin gui
           cargo build --release --bin db
