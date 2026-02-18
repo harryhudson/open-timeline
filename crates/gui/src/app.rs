@@ -64,7 +64,7 @@ impl MainTabSelected {
             Self::Tags => String::from("Tags"),
             Self::Timelines => String::from("Timelines"),
             Self::Stats => String::from("Stats"),
-            Self::BackupRestoreMerge => String::from("Backup | Restore | Merge"),
+            Self::BackupRestoreMerge => String::from("Backup | Merge | Restore"),
 
             Self::GameDecades => String::from("Decades"),
             Self::GameLeftRight => String::from("Left/Right"),
