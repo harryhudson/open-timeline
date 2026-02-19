@@ -11,10 +11,12 @@ use crate::shortcuts::global_shortcuts;
 use crate::spawn_transaction_no_commit_send_result;
 use crate::windows::{Deleted, DeletedStatus};
 use bool_tag_expr::Tag;
-use eframe::egui::{CentralPanel, Context, ScrollArea, Vec2, ViewportId};
+use eframe::egui::{self, CentralPanel, Context, Response, ScrollArea, Ui, Vec2, ViewportId};
 use open_timeline_core::{IsReducedCollection, IsReducedType};
 use open_timeline_crud::{CrudError, FetchAllWithTag, ReducedAll};
-use open_timeline_gui_core::{BreakOutWindow, CheckForUpdates, Reload, Shortcut, window_has_focus};
+use open_timeline_gui_core::{
+    BreakOutWindow, CheckForUpdates, DisplayStatus, GuiStatus, Reload, Shortcut, window_has_focus,
+};
 use std::hash::{DefaultHasher, Hash, Hasher};
 use std::sync::Arc;
 use std::time::Instant;
@@ -27,8 +29,8 @@ pub struct TagViewGui {
     /// The tag currently being viewing
     tag: Tag,
 
-    /// The status string
-    status_str: String,
+    /// The status of the current window
+    status: Status,
 
     /// Send an action request to the main loop
     tx_action_request: UnboundedSender<ActionRequest>,
@@ -54,6 +56,26 @@ pub struct TagViewGui {
     shared_config: SharedConfig,
 }
 
+/// The current status of the window (status message for the user is derived
+/// from this)
+#[derive(Debug)]
+enum Status {
+    ViewTag,
+    SucessfullyFetched,
+    FailedToFetch(CrudError),
+}
+
+impl DisplayStatus for Status {
+    fn status_display(&self, ui: &mut Ui) -> Response {
+        let str = match &self {
+            Self::ViewTag => String::from("View tag"),
+            Self::SucessfullyFetched => String::from("Sucessfully fetched"),
+            Self::FailedToFetch(error) => format!("Error fetching: {error}"),
+        };
+        ui.add(egui::Label::new(str).truncate())
+    }
+}
+
 impl TagViewGui {
     /// Create new TagViewGui
     pub fn new(
@@ -63,7 +85,7 @@ impl TagViewGui {
     ) -> Self {
         let mut tag_view_gui = TagViewGui {
             tag,
-            status_str: String::from("View tag"),
+            status: Status::ViewTag,
             tx_action_request,
             all_with_tag: None,
             rx_reload: None,
@@ -114,13 +136,13 @@ impl Reload for TagViewGui {
                                 self.set_deleted_status(DeletedStatus::Deleted(Instant::now()));
                                 return;
                             }
-                            self.status_str = String::from("Sucessfully fetched");
+                            self.status = Status::SucessfullyFetched;
                             self.all_with_tag = Some(all);
                         }
                         // TODO: deleted?
                         Err(error) => {
                             eprintln!("Tag view error: {error}");
-                            self.status_str = format!("Error fetching: {error}");
+                            self.status = Status::FailedToFetch(error);
                         }
                     }
                 }
@@ -188,7 +210,7 @@ impl BreakOutWindow for TagViewGui {
             }
 
             // Status
-            ui.label(&self.status_str);
+            GuiStatus::display(ui, &self.status);
             ui.separator();
 
             let available_width = ui.available_width();

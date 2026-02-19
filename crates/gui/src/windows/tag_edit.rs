@@ -14,10 +14,11 @@ use crate::consts::DEFAULT_WINDOW_SIZES;
 use crate::shortcuts::global_shortcuts;
 use crate::windows::{Deleted, DeletedStatus};
 use bool_tag_expr::Tag;
-use eframe::egui::{CentralPanel, Context, Vec2, ViewportId};
+use eframe::egui::{self, CentralPanel, Context, Response, Ui, Vec2, ViewportId};
 use open_timeline_crud::{CrudError, delete_all_matching_tags, update_all_matching_entity_tags};
 use open_timeline_gui_core::{
-    BreakOutWindow, CheckForUpdates, Draw, Reload, Valid, ValidityAsynchronous, window_has_focus,
+    BreakOutWindow, CheckForUpdates, DisplayStatus, Draw, GuiStatus, Reload, Valid,
+    ValidityAsynchronous, window_has_focus,
 };
 use open_timeline_gui_core::{Shortcut, ShowRemoveButton};
 use std::hash::{DefaultHasher, Hash, Hasher};
@@ -39,8 +40,8 @@ pub struct TagBulkEditGui {
     /// `Deleted` variant holds the `Instant` it was deleted.
     deleted_status: DeletedStatus,
 
-    /// The status printed for the user
-    status_str: String,
+    /// The status of the current window
+    status: Status,
 
     /// Receive update operation updates (if an update has been requested)
     rx_update: Option<Receiver<Result<(), CrudError>>>,
@@ -62,6 +63,38 @@ pub struct TagBulkEditGui {
     shared_config: SharedConfig,
 }
 
+/// The current status of the window (status message for the user is derived
+/// from this)
+#[derive(Debug)]
+enum Status {
+    NoChanges,
+    InvalidUpdate(String),
+    InvalidDelete(String),
+    WaitingForValidity,
+    FailedToUpdate(CrudError),
+    FailedToDelete(Tag, CrudError),
+    SucessfullyUpdated,
+    SucessfullyDeleted(Tag),
+}
+
+impl DisplayStatus for Status {
+    fn status_display(&self, ui: &mut Ui) -> Response {
+        let str = match &self {
+            Self::NoChanges => String::from("No changes to save"),
+            Self::InvalidUpdate(error) => format!("Tag can't be updated (error: {error})"),
+            Self::InvalidDelete(error) => format!("Tag can't be deleted (error: {error})"),
+            Self::WaitingForValidity => String::from("Waiting for validation"),
+            Self::FailedToUpdate(error) => format!("Failed to update tag: {error}"),
+            Self::FailedToDelete(tag, error) => {
+                format!("Failed to delete '{tag}': {error}")
+            }
+            Self::SucessfullyUpdated => String::from("Updated tag"),
+            Self::SucessfullyDeleted(tag) => format!("Sucessfully deleted '{tag}'"),
+        };
+        ui.add(egui::Label::new(str).truncate())
+    }
+}
+
 impl TagBulkEditGui {
     /// Create new `TagBulkEditGui`
     pub fn new(
@@ -74,7 +107,7 @@ impl TagBulkEditGui {
             database_entry: tag.clone(),
             new_tag_gui: TagGui::from_tag(tag, ShowRemoveButton::No),
             deleted_status: DeletedStatus::NotDeleted,
-            status_str: String::from("No changes to save"),
+            status: Status::NoChanges,
             rx_update: None,
             rx_delete: None,
             tx_action_request,
@@ -100,10 +133,10 @@ impl TagBulkEditGui {
                 self.update(as_opentimeline_type);
             }
             ValidityAsynchronous::Invalid(error) => {
-                self.status_str = format!("Tag can't be updated (error: {error})");
+                self.status = Status::InvalidUpdate(error);
             }
             ValidityAsynchronous::Waiting => {
-                self.status_str = String::from("Waiting for validation")
+                self.status = Status::WaitingForValidity;
             }
         }
     }
@@ -116,10 +149,10 @@ impl TagBulkEditGui {
                 self.delete(as_opentimeline_type);
             }
             ValidityAsynchronous::Invalid(error) => {
-                self.status_str = format!("Tag can't be deleted (error: {error})");
+                self.status = Status::InvalidDelete(error);
             }
             ValidityAsynchronous::Waiting => {
-                self.status_str = String::from("Waiting for validation")
+                self.status = Status::WaitingForValidity;
             }
         }
     }
@@ -169,13 +202,13 @@ impl TagBulkEditGui {
                     self.rx_update = None;
                     match result {
                         Ok(()) => {
-                            self.status_str = String::from("Updated tag");
+                            self.status = Status::SucessfullyUpdated;
                             // TODO: this could fail (become invalid) - send back the new tag from database
                             self.database_entry = self.new_tag_gui.to_opentimeline_type();
                             let _ = self.tx_crud_operation_executed.send(());
                         }
                         Err(error) => {
-                            self.status_str = format!("Failed to update tag: {error}");
+                            self.status = Status::FailedToUpdate(error);
                         }
                     }
                 }
@@ -192,13 +225,11 @@ impl TagBulkEditGui {
                     self.rx_delete = None;
                     match result {
                         Ok(()) => {
-                            self.status_str = format!("Sucessfully deleted '{deleted_tag}'");
+                            self.status = Status::SucessfullyDeleted(deleted_tag);
                             self.set_deleted_status(DeletedStatus::Deleted(Instant::now()));
                             let _ = self.tx_crud_operation_executed.send(());
                         }
-                        Err(error) => {
-                            self.status_str = format!("Failed to delete '{deleted_tag}': {error}")
-                        }
+                        Err(error) => self.status = Status::FailedToDelete(deleted_tag, error),
                     }
                 }
                 Err(TryRecvError::Empty) => (),
@@ -283,7 +314,7 @@ impl BreakOutWindow for TagBulkEditGui {
             ui.separator();
 
             // Status
-            ui.label(&self.status_str);
+            GuiStatus::display(ui, &self.status);
             ui.separator();
 
             // Display emtpy window and countdown after deletion
