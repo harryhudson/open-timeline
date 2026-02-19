@@ -8,7 +8,7 @@ use crate::config::SharedConfig;
 use eframe::egui::{self, Align, Context, Grid, Layout, Response, Spinner, TextEdit, Ui};
 use open_timeline_core::{Entity, TimelineEdit};
 use open_timeline_crud::{BackupMergeRestore, BackupRestoreMergeError, backup, merge, restore};
-use open_timeline_gui_core::Draw;
+use open_timeline_gui_core::{CheckForUpdates, Draw};
 use open_timeline_gui_core::{DisplayStatus, GuiStatus};
 use std::fs::File;
 use std::io::BufWriter;
@@ -334,8 +334,6 @@ impl BackupMergeRestoreGui {
 
 impl Draw for BackupMergeRestoreGui {
     fn draw(&mut self, _ctx: &Context, ui: &mut Ui) {
-        self.check_for_msg();
-
         // Status
         self.draw_status(ui);
         ui.separator();
@@ -352,6 +350,20 @@ impl Draw for BackupMergeRestoreGui {
 
         // Web API
         self.draw_web_api_merge_restore(ui);
+    }
+}
+
+impl CheckForUpdates for BackupMergeRestoreGui {
+    fn check_for_updates(&mut self) {
+        self.check_for_msg();
+    }
+
+    fn waiting_for_updates(&mut self) -> bool {
+        let waiting = self.rx_backup_restore_merge_update.is_some();
+        if waiting {
+            info!("BackupMergeRestoreGui is waiting for updates");
+        }
+        waiting
     }
 }
 

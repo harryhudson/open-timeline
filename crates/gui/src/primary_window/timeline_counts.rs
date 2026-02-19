@@ -16,7 +16,7 @@ use egui_extras::{Column, TableBuilder};
 use open_timeline_core::HasIdAndName;
 use open_timeline_crud::{CrudError, SortAlphabetically, SortByNumber, TimelineCounts};
 use open_timeline_gui_core::{
-    Draw, Paginator, Reload, body_text_height, widget_x_spacing, widget_y_spacing,
+    CheckForUpdates, Draw, Paginator, Reload, body_text_height, widget_x_spacing, widget_y_spacing,
 };
 use std::sync::Arc;
 use tokio::sync::mpsc::error::TryRecvError;
@@ -384,6 +384,20 @@ impl Draw for TimelineCountsGui {
 
         // Pagination controls
         self.paginator.draw(ctx, ui);
+    }
+}
+
+impl CheckForUpdates for TimelineCountsGui {
+    fn check_for_updates(&mut self) {
+        self.check_reload_response();
+    }
+
+    fn waiting_for_updates(&mut self) -> bool {
+        let waiting = self.rx_reload.is_some();
+        if waiting {
+            info!("TimelineCountsGui is waiting for updates");
+        }
+        waiting
     }
 }
 

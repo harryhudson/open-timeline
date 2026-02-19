@@ -9,7 +9,7 @@ use crate::spawn_transaction_no_commit_send_result;
 use eframe::egui::{Align, Context, Layout, ScrollArea, Ui};
 use egui_extras::{Column, TableBuilder};
 use open_timeline_crud::{CrudError, DatabaseRowCount};
-use open_timeline_gui_core::{Draw, Reload, body_text_height, widget_x_spacing};
+use open_timeline_gui_core::{CheckForUpdates, Draw, Reload, body_text_height, widget_x_spacing};
 use std::sync::Arc;
 use tokio::sync::mpsc::Receiver;
 use tokio::sync::mpsc::error::TryRecvError;
@@ -83,8 +83,6 @@ impl Reload for StatsGui {
 
 impl Draw for StatsGui {
     fn draw(&mut self, _ctx: &Context, ui: &mut Ui) {
-        self.check_reload_response();
-
         // Display stats
         if let Some(row_counts) = self.table_row_counts.as_ref() {
             // Sizes
@@ -151,5 +149,19 @@ impl Draw for StatsGui {
                     });
             });
         }
+    }
+}
+
+impl CheckForUpdates for StatsGui {
+    fn check_for_updates(&mut self) {
+        self.check_reload_response();
+    }
+
+    fn waiting_for_updates(&mut self) -> bool {
+        let waiting = self.rx_reload.is_some();
+        if waiting {
+            info!("StatsGui is waiting for updates");
+        }
+        waiting
     }
 }

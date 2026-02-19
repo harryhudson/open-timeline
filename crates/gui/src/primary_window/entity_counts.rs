@@ -15,7 +15,7 @@ use eframe::egui::{self, Align, Context, Layout, ScrollArea, TextEdit, Ui, Vec2}
 use egui_extras::{Column, TableBuilder};
 use open_timeline_crud::{CrudError, EntityCounts, SortAlphabetically, SortByNumber};
 use open_timeline_gui_core::{
-    Draw, Paginator, Reload, body_text_height, widget_x_spacing, widget_y_spacing,
+    CheckForUpdates, Draw, Paginator, Reload, body_text_height, widget_x_spacing, widget_y_spacing,
 };
 use std::sync::Arc;
 use tokio::sync::mpsc::error::TryRecvError;
@@ -402,8 +402,6 @@ impl Reload for EntityCountsGui {
 
 impl Draw for EntityCountsGui {
     fn draw(&mut self, ctx: &Context, ui: &mut Ui) {
-        self.check_reload_response();
-
         // Input to filter by text
         let filter_input = ui.add(
             TextEdit::singleline(&mut self.filter_text)
@@ -466,6 +464,20 @@ impl Draw for EntityCountsGui {
 
         // Pagination controls
         self.paginator.draw(ctx, ui);
+    }
+}
+
+impl CheckForUpdates for EntityCountsGui {
+    fn check_for_updates(&mut self) {
+        self.check_reload_response();
+    }
+
+    fn waiting_for_updates(&mut self) -> bool {
+        let waiting = self.rx_reload.is_some();
+        if waiting {
+            info!("EntityCountsGui is waiting for updates");
+        }
+        waiting
     }
 }
 

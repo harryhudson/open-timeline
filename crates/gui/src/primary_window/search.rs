@@ -19,7 +19,8 @@ use open_timeline_core::{
 };
 use open_timeline_crud::{CrudError, FetchByPartialNameAndBoolTagExpr, Limit};
 use open_timeline_gui_core::{
-    Draw, EmptyConsideredInvalid, Reload, ShowRemoveButton, body_text_height, widget_x_spacing,
+    CheckForUpdates, Draw, EmptyConsideredInvalid, Reload, ShowRemoveButton, body_text_height,
+    widget_x_spacing,
 };
 use std::sync::Arc;
 use std::u32;
@@ -124,9 +125,6 @@ impl SearchGui {
 
 impl Draw for SearchGui {
     fn draw(&mut self, ctx: &Context, ui: &mut Ui) {
-        self.timeline_search.check_reload_response();
-        self.entity_search.check_reload_response();
-
         ui.columns(2, |columns| {
             // Timeline Column
             columns[0].vertical(|ui| {
@@ -162,6 +160,22 @@ impl Draw for SearchGui {
                 self.show_entity_search_results(ui, ctx);
             });
         });
+    }
+}
+
+impl CheckForUpdates for SearchGui {
+    fn check_for_updates(&mut self) {
+        self.timeline_search.check_reload_response();
+        self.entity_search.check_reload_response();
+    }
+
+    fn waiting_for_updates(&mut self) -> bool {
+        let waiting = self.timeline_search.rx_search_results.is_some()
+            || self.entity_search.rx_search_results.is_some();
+        if waiting {
+            info!("SearchGui is waiting for updates");
+        }
+        waiting
     }
 }
 
@@ -481,6 +495,7 @@ where
     fn check_reload_response(&mut self) {
         if let Some(rx) = self.rx_search_results.as_mut() {
             if let Ok(data) = rx.try_recv() {
+                self.rx_search_results = None;
                 match data {
                     Ok(results) => self.search_results = results,
                     Err(_) => (),
