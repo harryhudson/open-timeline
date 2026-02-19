@@ -7,7 +7,7 @@
 use crate::app::{ActionRequest, UnboundedChannel};
 use crate::app_colours::{AppColours, ColourTheme};
 use crate::config::{Config, SharedConfig};
-use eframe::egui::{self, Context, Response, Spinner, Ui};
+use eframe::egui::{self, Context, Grid, Response, RichText, ScrollArea, Spinner, Ui};
 use log::{error, info};
 use open_timeline_crud::{CrudError, db_url_from_path};
 use open_timeline_gui_core::Draw;
@@ -119,14 +119,29 @@ impl SettingsGui {
     /// Draw everything related to controlling the application's database
     /// settings
     fn draw_database_settings(&mut self, _ctx: &Context, ui: &mut Ui) {
-        open_timeline_gui_core::Label::sub_heading(ui, "Database");
+        // Sub heading
+        open_timeline_gui_core::Label::sub_heading(ui, "Database File");
+
+        // Path of database file in use
         let database_path = self.config.database_path().to_string_lossy().to_string();
-        ui.monospace(database_path);
+        let monospace_size = ui.style().text_styles[&egui::TextStyle::Monospace].size;
+        let size = monospace_size * 0.9;
+        let text = RichText::new(&database_path).monospace().size(size);
+        ui.label(text);
         ui.add_space(5.0);
 
-        self.select_existing_database(ui);
-        self.select_new_database(ui);
-        self.use_default_database(ui);
+        // Buttons for database selection
+        let width = ui.available_width() / 3.0;
+        Grid::new("database_file_buttons")
+            .min_col_width(width)
+            .max_col_width(width)
+            .num_columns(3)
+            .show(ui, |ui| {
+                self.select_existing_database(ui);
+                self.select_new_database(ui);
+                self.use_default_database(ui);
+            });
+        ui.add_space(10.0);
     }
 
     /// Draw everything related to controlling the application's colours
@@ -215,9 +230,7 @@ impl SettingsGui {
     }
 
     fn select_existing_database(&mut self, ui: &mut Ui) {
-        if open_timeline_gui_core::Button::tall_full_width(ui, "Use Existing Database File")
-            .clicked()
-        {
+        if open_timeline_gui_core::Button::tall_full_width(ui, "Use Existing").clicked() {
             if let Some(db_path) = rfd::FileDialog::new().pick_file() {
                 println!("Selected file: {}", db_path.display());
                 self.config.set_database_path(&db_path);
@@ -229,9 +242,7 @@ impl SettingsGui {
     }
 
     fn select_new_database(&mut self, ui: &mut Ui) {
-        if open_timeline_gui_core::Button::tall_full_width(ui, "Create & Use New Database File")
-            .clicked()
-        {
+        if open_timeline_gui_core::Button::tall_full_width(ui, "Create & Use New").clicked() {
             if let Some(db_path) = rfd::FileDialog::new().save_file() {
                 self.config.set_database_path(&db_path);
                 let (tx, rx) = tokio::sync::mpsc::channel(1);
@@ -242,7 +253,7 @@ impl SettingsGui {
     }
 
     fn use_default_database(&mut self, ui: &mut Ui) {
-        if open_timeline_gui_core::Button::tall_full_width(ui, "Use Default Database").clicked() {
+        if open_timeline_gui_core::Button::tall_full_width(ui, "Use Default").clicked() {
             self.config.set_to_default();
             let (tx, rx) = tokio::sync::mpsc::channel(1);
             self.rx_database_config_update = Some(rx);
