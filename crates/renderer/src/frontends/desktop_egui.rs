@@ -109,9 +109,13 @@ impl OpenTimelineRendererEgui {
         self.engine.colours()
     }
 
+    // TODO: this is horrible (trying not to log every frame). Fix check_for_timeline_colour_changes()
+    // which is using blocking_read() (remove all blocking_read()s)
     pub fn set_colours(&mut self, colours: TimelineColours) {
-        debug!("egui renderer set colours");
-        self.engine.set_colours(colours)
+        if colours != self.engine.colours() {
+            debug!("egui renderer set colours");
+            self.engine.set_colours(colours)
+        }
     }
 }
 
