@@ -17,7 +17,7 @@ use bool_tag_expr::Tag;
 use eframe::egui::{CentralPanel, Context, Vec2, ViewportId};
 use open_timeline_crud::{CrudError, delete_all_matching_tags, update_all_matching_entity_tags};
 use open_timeline_gui_core::{
-    BreakOutWindow, Draw, Reload, Valid, ValidityAsynchronous, window_has_focus,
+    BreakOutWindow, CheckForUpdates, Draw, Reload, Valid, ValidityAsynchronous, window_has_focus,
 };
 use open_timeline_gui_core::{Shortcut, ShowRemoveButton};
 use std::hash::{DefaultHasher, Hash, Hasher};
@@ -161,23 +161,24 @@ impl TagBulkEditGui {
 
     // TODO: Nearly identical to that in entity.rs (make generic or macro)
     /// Handle create/update/delete response
-    fn receive_any_crud_status_updates(&mut self) {
+    fn check_for_crud_status_updates(&mut self) {
         // Response to create/update request
         if let Some(rx) = self.rx_update.as_mut() {
             match rx.try_recv() {
-                Ok(result) => match result {
-                    Ok(()) => {
-                        self.rx_update = None;
-                        self.status_str = String::from("Updated tag");
-                        // TODO: this could fail (become invalid) - send back the new tag from database
-                        self.database_entry = self.new_tag_gui.to_opentimeline_type();
-                        let _ = self.tx_crud_operation_executed.send(());
+                Ok(result) => {
+                    self.rx_update = None;
+                    match result {
+                        Ok(()) => {
+                            self.status_str = String::from("Updated tag");
+                            // TODO: this could fail (become invalid) - send back the new tag from database
+                            self.database_entry = self.new_tag_gui.to_opentimeline_type();
+                            let _ = self.tx_crud_operation_executed.send(());
+                        }
+                        Err(error) => {
+                            self.status_str = format!("Failed to update tag: {error}");
+                        }
                     }
-                    Err(error) => {
-                        self.rx_update = None;
-                        self.status_str = format!("Failed to update tag: {error}");
-                    }
-                },
+                }
                 Err(TryRecvError::Empty) => (),
                 Err(TryRecvError::Disconnected) => (),
             }
@@ -187,18 +188,19 @@ impl TagBulkEditGui {
         if let Some(rx) = self.rx_delete.as_mut() {
             let deleted_tag = self.database_entry.clone();
             match rx.try_recv() {
-                Ok(result) => match result {
-                    Ok(()) => {
-                        self.rx_delete = None;
-                        self.status_str = format!("Sucessfully deleted '{deleted_tag}'");
-                        self.set_deleted_status(DeletedStatus::Deleted(Instant::now()));
-                        let _ = self.tx_crud_operation_executed.send(());
+                Ok(result) => {
+                    self.rx_delete = None;
+                    match result {
+                        Ok(()) => {
+                            self.status_str = format!("Sucessfully deleted '{deleted_tag}'");
+                            self.set_deleted_status(DeletedStatus::Deleted(Instant::now()));
+                            let _ = self.tx_crud_operation_executed.send(());
+                        }
+                        Err(error) => {
+                            self.status_str = format!("Failed to delete '{deleted_tag}': {error}")
+                        }
                     }
-                    Err(error) => {
-                        self.rx_delete = None;
-                        self.status_str = format!("Failed to delete '{deleted_tag}': {error}")
-                    }
-                },
+                }
                 Err(TryRecvError::Empty) => (),
                 Err(TryRecvError::Disconnected) => (),
             }
@@ -245,6 +247,21 @@ impl Deleted for TagBulkEditGui {
     }
 }
 
+impl CheckForUpdates for TagBulkEditGui {
+    fn check_for_updates(&mut self) {
+        self.check_reload_response();
+        self.check_for_crud_status_updates();
+    }
+
+    fn waiting_for_updates(&mut self) -> bool {
+        let waiting = self.rx_update.is_some() || self.rx_delete.is_some();
+        if waiting {
+            info!("TagBulkEditGui is waiting for updates");
+        }
+        waiting
+    }
+}
+
 impl BreakOutWindow for TagBulkEditGui {
     fn draw(&mut self, ctx: &Context) {
         // Handle shortcuts
@@ -259,9 +276,6 @@ impl BreakOutWindow for TagBulkEditGui {
 
         // Check for global shortcuts
         global_shortcuts(ctx, &mut self.tx_action_request);
-
-        // Check for reload
-        self.check_reload_response();
 
         CentralPanel::default().show(ctx, |ui| {
             // Window title
@@ -287,8 +301,6 @@ impl BreakOutWindow for TagBulkEditGui {
 
                 return;
             }
-
-            self.receive_any_crud_status_updates();
 
             // Create/Update/Delete buttons
             ui.horizontal(|ui| {

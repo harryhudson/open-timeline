@@ -22,8 +22,8 @@ use log::info;
 use open_timeline_core::{Entity, HasIdAndName, OpenTimelineId};
 use open_timeline_crud::{CrudError, FetchById};
 use open_timeline_gui_core::{
-    BreakOutWindow, CreateOrEdit, DisplayStatus, Draw, GuiStatus, Reload, Shortcut, Valid,
-    ValidityAsynchronous, window_has_focus,
+    BreakOutWindow, CheckForUpdates, CreateOrEdit, DisplayStatus, Draw, GuiStatus, Reload,
+    Shortcut, Valid, ValidityAsynchronous, window_has_focus,
 };
 use std::sync::Arc;
 use std::time::Instant;
@@ -399,12 +399,14 @@ impl EntityEditGui {
     }
 
     // Nearly identical to that in timeline_edit.rs (make generic or macro)
-    fn receive_any_crud_status_updates(&mut self) {
+    fn check_for_crud_status_updates(&mut self) {
         // Response to create/update request
         if let Some(rx) = self.rx_create_update.as_mut() {
             match rx.try_recv() {
                 Ok(result) => {
                     debug!("recv crud update");
+                    self.rx_create_update = None;
+                    self.crud_op_requested = None;
                     match result {
                         Ok(entity) => {
                             info!("Entity updated sucessfully");
@@ -416,8 +418,6 @@ impl EntityEditGui {
                             let _ = self.tx_crud_operation_executed.send(());
                         }
                         Err(error) => {
-                            self.rx_create_update = None;
-                            self.crud_op_requested = None;
                             self.status = match self.create_or_edit {
                                 CreateOrEdit::Create => Status::CreateError(error),
                                 CreateOrEdit::Edit => Status::UpdateError(error),
@@ -433,20 +433,20 @@ impl EntityEditGui {
         // Response to delete request
         if let Some(rx) = self.rx_delete.as_mut() {
             match rx.try_recv() {
-                Ok(result) => match result {
-                    Ok(()) => {
-                        self.rx_delete = None;
-                        self.crud_op_requested = None;
-                        self.status = Status::Deleted;
-                        self.set_deleted_status(DeletedStatus::Deleted(Instant::now()));
-                        let _ = self.tx_crud_operation_executed.send(());
+                Ok(result) => {
+                    self.rx_delete = None;
+                    self.crud_op_requested = None;
+                    match result {
+                        Ok(()) => {
+                            self.status = Status::Deleted;
+                            self.set_deleted_status(DeletedStatus::Deleted(Instant::now()));
+                            let _ = self.tx_crud_operation_executed.send(());
+                        }
+                        Err(error) => {
+                            self.status = Status::DeleteError(error);
+                        }
                     }
-                    Err(error) => {
-                        self.rx_delete = None;
-                        self.crud_op_requested = None;
-                        self.status = Status::DeleteError(error);
-                    }
-                },
+                }
                 Err(TryRecvError::Empty) => (),
                 Err(TryRecvError::Disconnected) => (),
             }
@@ -538,6 +538,22 @@ impl Valid for EntityEditGui {
     }
 }
 
+impl CheckForUpdates for EntityEditGui {
+    fn check_for_updates(&mut self) {
+        self.check_reload_response();
+        self.check_for_crud_status_updates();
+    }
+
+    fn waiting_for_updates(&mut self) -> bool {
+        let waiting =
+            self.rx_reload.is_some() || self.rx_delete.is_some() || self.rx_create_update.is_some();
+        if waiting {
+            info!("EntityEditGui is waiting for updates");
+        }
+        waiting
+    }
+}
+
 impl BreakOutWindow for EntityEditGui {
     fn draw(&mut self, ctx: &Context) {
         // Handle shortcuts
@@ -552,10 +568,6 @@ impl BreakOutWindow for EntityEditGui {
 
         // Check for global shortcuts
         global_shortcuts(ctx, &mut self.tx_action_request);
-
-        // Check responses
-        self.check_reload_response();
-        self.receive_any_crud_status_updates();
 
         // Update status (TODO: needed or done elsewhere?)
         match self.validity() {

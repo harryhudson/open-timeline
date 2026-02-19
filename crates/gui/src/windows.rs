@@ -24,7 +24,7 @@ use crate::consts::{
     DEFAULT_NEW_WINDOW_X_OFFSET_FROM_MAIN_WINDOW, DEFAULT_NEW_WINDOW_Y_OFFSET_FROM_MAIN_WINDOW,
 };
 use eframe::egui::{Context, Pos2, Ui, Vec2, ViewportBuilder, ViewportCommand, ViewportId};
-use open_timeline_gui_core::{BreakOutWindow, Draw, Reload};
+use open_timeline_gui_core::{BreakOutWindow, CheckForUpdates, Draw, Reload};
 use std::{collections::HashMap, hash::Hash, time::Instant};
 
 pub type DeletedAtInstant = Instant;
@@ -142,6 +142,27 @@ impl Reload for BreakOutWindows {
 
     fn check_reload_response(&mut self) {
         // Nothing to check
+    }
+}
+
+impl CheckForUpdates for BreakOutWindows {
+    fn check_for_updates(&mut self) {
+        for (window, _) in self.windows.values_mut() {
+            window.check_for_updates()
+        }
+    }
+
+    fn waiting_for_updates(&mut self) -> bool {
+        for (window, _) in self.windows.values_mut() {
+            if window.waiting_for_updates() {
+                info!(
+                    "BreakOutWindow (title = {}) is waiting for updates",
+                    window.title()
+                );
+                return true;
+            }
+        }
+        false
     }
 }
 

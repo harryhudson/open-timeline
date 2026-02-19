@@ -23,9 +23,9 @@ use eframe::egui::{
 use open_timeline_core::{HasIdAndName, OpenTimelineId, TimelineEdit};
 use open_timeline_crud::{CrudError, FetchById};
 use open_timeline_gui_core::{
-    BreakOutWindow, CreateOrEdit, DisplayStatus, Draw, EmptyConsideredInvalid, GuiStatus, Reload,
-    Shortcut, ShowRemoveButton, Valid, ValidSynchronous, ValidityAsynchronous, ValiditySynchronous,
-    window_has_focus,
+    BreakOutWindow, CheckForUpdates, CreateOrEdit, DisplayStatus, Draw, EmptyConsideredInvalid,
+    GuiStatus, Reload, Shortcut, ShowRemoveButton, Valid, ValidSynchronous, ValidityAsynchronous,
+    ValiditySynchronous, window_has_focus,
 };
 use std::sync::Arc;
 use std::time::Instant;
@@ -369,28 +369,30 @@ impl TimelineEditGui {
 
     // TODO: Nearly identical to that in entity.rs (make generic or macro)
     /// Handle create/update/delete response
-    fn receive_any_crud_status_updates(&mut self) {
+    fn check_for_crud_status_updates(&mut self) {
         // Response to create/update request
         if let Some(rx) = self.rx_create_update.as_mut() {
             match rx.try_recv() {
-                Ok(result) => match result {
-                    Ok(timeline) => {
-                        self.set_from_timeline(timeline);
-                        self.status = match self.create_or_edit {
-                            CreateOrEdit::Create => Status::Created,
-                            CreateOrEdit::Edit => Status::Updated,
-                        };
-                        let _ = self.tx_crud_operation_executed.send(());
+                Ok(result) => {
+                    self.rx_create_update = None;
+                    self.crud_op_requested = None;
+                    match result {
+                        Ok(timeline) => {
+                            self.set_from_timeline(timeline);
+                            self.status = match self.create_or_edit {
+                                CreateOrEdit::Create => Status::Created,
+                                CreateOrEdit::Edit => Status::Updated,
+                            };
+                            let _ = self.tx_crud_operation_executed.send(());
+                        }
+                        Err(error) => {
+                            self.status = match self.create_or_edit {
+                                CreateOrEdit::Create => Status::CreateError(error),
+                                CreateOrEdit::Edit => Status::UpdateError(error),
+                            };
+                        }
                     }
-                    Err(error) => {
-                        self.rx_create_update = None;
-                        self.crud_op_requested = None;
-                        self.status = match self.create_or_edit {
-                            CreateOrEdit::Create => Status::CreateError(error),
-                            CreateOrEdit::Edit => Status::UpdateError(error),
-                        };
-                    }
-                },
+                }
                 Err(TryRecvError::Empty) => (),
                 Err(TryRecvError::Disconnected) => (),
             }
@@ -399,20 +401,20 @@ impl TimelineEditGui {
         // Response to delete request
         if let Some(rx) = self.rx_delete.as_mut() {
             match rx.try_recv() {
-                Ok(result) => match result {
-                    Ok(()) => {
-                        self.rx_delete = None;
-                        self.crud_op_requested = None;
-                        self.status = Status::Deleted;
-                        self.set_deleted_status(DeletedStatus::Deleted(Instant::now()));
-                        let _ = self.tx_crud_operation_executed.send(());
+                Ok(result) => {
+                    self.rx_delete = None;
+                    self.crud_op_requested = None;
+                    match result {
+                        Ok(()) => {
+                            self.status = Status::Deleted;
+                            self.set_deleted_status(DeletedStatus::Deleted(Instant::now()));
+                            let _ = self.tx_crud_operation_executed.send(());
+                        }
+                        Err(error) => {
+                            self.status = Status::DeleteError(error);
+                        }
                     }
-                    Err(error) => {
-                        self.rx_delete = None;
-                        self.crud_op_requested = None;
-                        self.status = Status::DeleteError(error);
-                    }
-                },
+                }
                 Err(TryRecvError::Empty) => (),
                 Err(TryRecvError::Disconnected) => (),
             }
@@ -559,6 +561,22 @@ impl Deleted for TimelineEditGui {
     }
 }
 
+impl CheckForUpdates for TimelineEditGui {
+    fn check_for_updates(&mut self) {
+        self.check_reload_response();
+        self.check_for_crud_status_updates();
+    }
+
+    fn waiting_for_updates(&mut self) -> bool {
+        let waiting =
+            self.rx_reload.is_some() || self.rx_create_update.is_some() || self.rx_delete.is_some();
+        if waiting {
+            info!("TimelineEditGui is waiting for updates");
+        }
+        waiting
+    }
+}
+
 impl BreakOutWindow for TimelineEditGui {
     fn draw(&mut self, ctx: &Context) {
         // Handle shortcuts
@@ -573,10 +591,6 @@ impl BreakOutWindow for TimelineEditGui {
 
         // Check for global shortcuts
         global_shortcuts(ctx, &mut self.tx_action_request);
-
-        // Check for responses
-        self.check_reload_response();
-        self.receive_any_crud_status_updates();
 
         // Update the status
         match self.validity() {

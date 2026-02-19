@@ -10,7 +10,7 @@ use crate::consts::DEFAULT_WINDOW_SIZES;
 use crate::shortcuts::global_shortcuts;
 use crate::{app::ActionRequest, app_colours::ColourTheme};
 use eframe::egui::{CentralPanel, Context, Response, ScrollArea, Ui, Vec2, ViewportId};
-use open_timeline_gui_core::{BreakOutWindow, Reload, Shortcut, window_has_focus};
+use open_timeline_gui_core::{BreakOutWindow, CheckForUpdates, Reload, Shortcut, window_has_focus};
 use open_timeline_renderer::{Colour, TimelineColours};
 use tokio::sync::mpsc::UnboundedSender;
 
@@ -320,6 +320,16 @@ impl Reload for AppColoursGui {
 
     fn check_reload_response(&mut self) {
         // N/A
+    }
+}
+
+impl CheckForUpdates for AppColoursGui {
+    fn check_for_updates(&mut self) {
+        // N/A
+    }
+
+    fn waiting_for_updates(&mut self) -> bool {
+        false
     }
 }
 
