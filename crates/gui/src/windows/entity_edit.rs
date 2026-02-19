@@ -50,15 +50,15 @@ pub struct EntityEditGui {
     /// The GUI tags element
     tags: TagsGui,
 
-    /// Whether the entity has been deleted or not.  If it has been, the
-    /// `Deleted` variant holds the `Instant` it was deleted
-    deleted_status: DeletedStatus,
-
     /// Whether or not a reload has been requested
     requested_reload: bool,
 
     /// Whether the window is for creating or editing/updating an entity
     create_or_edit: CreateOrEdit,
+
+    /// Whether the entity has been deleted or not.  If it has been, the
+    /// `Deleted` variant holds the `Instant` it was deleted
+    deleted_status: DeletedStatus,
 
     /// The status of the current window
     status: Status,
@@ -101,11 +101,12 @@ pub struct EntityEditGui {
 /// from this)
 #[derive(Debug)]
 enum Status {
-    WaitingForReload,
-    WaitingForInitialLoad,
-
     NewWindowForCreation,
     NewWindowForEditing,
+
+    RequestingCreate,
+    RequestingUpdate,
+    RequestingDelete,
 
     CreateError(CrudError),
     UpdateError(CrudError),
@@ -114,25 +115,19 @@ enum Status {
     Created,
     Updated,
 
-    // TODO: display the name of the thing deleted (have to save the valid name,
-    // not use the possibly editing one)
-    Deleted,
-
+    Valid,
     Invalid(String),
-
-    HasBeenDeletedElseWhere,
 }
 
 // TODO: same as in timeline_edit.rs
 impl DisplayStatus for Status {
     fn status_display(&self, ui: &mut Ui) -> Response {
         let str = match &self {
-            Self::WaitingForReload => String::from("Waiting for entity to reload"),
-            Self::WaitingForInitialLoad => String::from("Waiting for entity to load"),
-
             Self::NewWindowForCreation => String::from("Ready to create an entity"),
             Self::NewWindowForEditing => String::from("Ready to edit an entity"),
-
+            Self::RequestingCreate => String::from("Attempting to create entity"),
+            Self::RequestingUpdate => String::from("Attempting to update entity"),
+            Self::RequestingDelete => String::from("Attempting to delete entity"),
             Self::CreateError(error) => {
                 format!("Error when trying to create entity: {error}")
             }
@@ -142,25 +137,16 @@ impl DisplayStatus for Status {
             Self::DeleteError(error) => {
                 format!("Error when trying to delete entity: {error}")
             }
-
             Self::Created => String::from("Entity successfully created"),
             Self::Updated => String::from("Entity successfully updated"),
-            Self::Deleted => String::from("Entity successfully deleted"),
-
+            Self::Valid => String::from("Entity is valid"),
             Self::Invalid(error) => format!("Entity is invalid: {error}"),
-
-            Self::HasBeenDeletedElseWhere => String::from("Entity was deleted elsewhere"),
         };
         ui.add(egui::Label::new(str).truncate())
     }
 }
 
 impl EntityEditGui {
-    /// Get whether the window is for editing or creating an entity
-    pub fn create_or_edit(&self) -> CreateOrEdit {
-        self.create_or_edit.clone()
-    }
-
     // TODO: perfect for type stating
     /// Get the ID of the entity being edited (or none if it's being created)
     pub fn entity_id(&self) -> Option<OpenTimelineId> {
@@ -266,7 +252,7 @@ impl EntityEditGui {
     /// Whether the entity differs from the one in the database
     fn differs_from_database_entry(&mut self) -> Option<bool> {
         // If the entity is being created, then nothing in the database to check
-        if self.create_or_edit() == CreateOrEdit::Create {
+        if self.create_or_edit == CreateOrEdit::Create {
             return None;
         }
 
@@ -378,11 +364,13 @@ impl EntityEditGui {
             self.rx_create_update = Some(rx);
             self.crud_op_requested = Some(CrudOperationRequested::CreateOrUpdate);
             let entity = self.to_opentimeline_type();
-            let edit_or_create = self.create_or_edit.clone();
+            let create_or_edit = self.create_or_edit;
             let shared_config = Arc::clone(&self.shared_config);
-            tokio::spawn(
-                async move { save_crud(shared_config, &edit_or_create, entity, tx).await },
-            );
+            self.status = match create_or_edit {
+                CreateOrEdit::Create => Status::RequestingCreate,
+                CreateOrEdit::Edit => Status::RequestingUpdate,
+            };
+            tokio::spawn(async move { save_crud(shared_config, create_or_edit, entity, tx).await });
         }
     }
 
@@ -393,12 +381,13 @@ impl EntityEditGui {
         self.crud_op_requested = Some(CrudOperationRequested::Delete);
         let entity_id = self.entity_id.unwrap();
         let shared_config = Arc::clone(&self.shared_config);
+        self.status = Status::RequestingDelete;
         tokio::spawn(
             async move { delete_from_id_crud::<Entity>(shared_config, entity_id, tx).await },
         );
     }
 
-    // Nearly identical to that in timeline_edit.rs (make generic or macro)
+    // TODO: Nearly identical to that in timeline_edit.rs (make generic or macro)
     fn check_for_crud_status_updates(&mut self) {
         // Response to create/update request
         if let Some(rx) = self.rx_create_update.as_mut() {
@@ -410,11 +399,14 @@ impl EntityEditGui {
                     match result {
                         Ok(entity) => {
                             info!("Entity updated sucessfully");
-                            self.set_from_entity(entity);
+
+                            // Must become before calling `self.set_from_entity()`
                             self.status = match self.create_or_edit {
                                 CreateOrEdit::Create => Status::Created,
                                 CreateOrEdit::Edit => Status::Updated,
                             };
+
+                            self.set_from_entity(entity);
                             let _ = self.tx_crud_operation_executed.send(());
                         }
                         Err(error) => {
@@ -439,7 +431,6 @@ impl EntityEditGui {
                     self.crud_op_requested = None;
                     match result {
                         Ok(()) => {
-                            self.status = Status::Deleted;
                             self.set_deleted_status(DeletedStatus::Deleted(Instant::now()));
                             let _ = self.tx_crud_operation_executed.send(());
                         }
@@ -473,7 +464,6 @@ impl Reload for EntityEditGui {
         }
         match self.entity_id {
             Some(entity_id) => {
-                // self.status = Status::WaitingForReload;
                 self.requested_reload = true;
                 let (tx, rx) = tokio::sync::mpsc::channel(1);
                 self.rx_reload = Some(rx);
@@ -576,7 +566,11 @@ impl BreakOutWindow for EntityEditGui {
         // Update status (TODO: needed or done elsewhere?)
         match self.validity() {
             ValidityAsynchronous::Invalid(error) => self.status = Status::Invalid(error),
-            ValidityAsynchronous::Valid => (),
+            ValidityAsynchronous::Valid => {
+                if matches!(self.status, Status::Invalid(_)) {
+                    self.status = Status::Valid;
+                }
+            }
             ValidityAsynchronous::Waiting => (),
         }
 
@@ -638,7 +632,7 @@ impl BreakOutWindow for EntityEditGui {
     }
 
     fn viewport_id(&mut self) -> ViewportId {
-        ViewportId(eframe::egui::Id::from(match self.create_or_edit() {
+        ViewportId(eframe::egui::Id::from(match self.create_or_edit {
             CreateOrEdit::Create => format!("entity_create_{}", OpenTimelineId::new()),
             CreateOrEdit::Edit => {
                 format!("entity_edit_{}", self.entity_id().unwrap())
@@ -648,7 +642,7 @@ impl BreakOutWindow for EntityEditGui {
 
     // TODO: add "unsaved"?
     fn title(&mut self) -> String {
-        match self.create_or_edit() {
+        match self.create_or_edit {
             CreateOrEdit::Create => {
                 format!("Create Entity • {}", self.name.name)
             }

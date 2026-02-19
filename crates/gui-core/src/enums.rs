@@ -13,7 +13,7 @@ pub enum ShowRemoveButton {
 
 /// Used to indicate whether the window was opened for creating or editing
 /// something.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum CreateOrEdit {
     Edit,
     Create,

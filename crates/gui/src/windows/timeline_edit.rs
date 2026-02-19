@@ -62,12 +62,12 @@ pub struct TimelineEditGui {
     /// timeline, for example, it may or may not have an expression.
     has_expr: bool,
 
+    /// Whether the window is for creating or editing/updating a timeline
+    create_or_edit: CreateOrEdit,
+
     /// Whether the timeline has been deleted or not.  If it has been, the
     /// `Deleted` variant holds the `Instant` it was deleted
     deleted_status: DeletedStatus,
-
-    /// Whether the window is for creating or editing/updating a timeline
-    create_or_edit: CreateOrEdit,
 
     /// The status of the current window
     status: Status,
@@ -104,13 +104,14 @@ pub struct TimelineEditGui {
 // TODO: these are all the same as in entity_edit.rs
 /// The current status of the window (status message for the user is derived
 /// from this)
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 enum Status {
-    WaitingForReload,
-    WaitingForInitialLoad,
-
     NewWindowForCreation,
     NewWindowForEditing,
+
+    RequestingCreate,
+    RequestingUpdate,
+    RequestingDelete,
 
     CreateError(CrudError),
     UpdateError(CrudError),
@@ -119,25 +120,19 @@ enum Status {
     Created,
     Updated,
 
-    // TODO: display the name of the thing deleted (have to save the valid name,
-    // not use the possibly editing one)
-    Deleted,
-
+    Valid,
     Invalid(String),
-
-    HasBeenDeletedElseWhere,
 }
 
 // TODO: same as in entity_edit.rs
 impl DisplayStatus for Status {
     fn status_display(&self, ui: &mut Ui) -> Response {
         let str = match self {
-            Self::WaitingForReload => String::from("Waiting for timeline to reload"),
-            Self::WaitingForInitialLoad => String::from("Waiting for timeline to load"),
-
             Self::NewWindowForCreation => String::from("Ready to create an timeline"),
             Self::NewWindowForEditing => String::from("Ready to edit an timeline"),
-
+            Self::RequestingCreate => String::from("Attempting to create timeline"),
+            Self::RequestingUpdate => String::from("Attempting to update timeline"),
+            Self::RequestingDelete => String::from("Attempting to delete timeline"),
             Self::CreateError(error) => {
                 format!("Error when trying to create timeline: {error}")
             }
@@ -147,14 +142,10 @@ impl DisplayStatus for Status {
             Self::DeleteError(error) => {
                 format!("Error when trying to delete timeline: {error}")
             }
-
             Self::Created => String::from("Timeline successfully created"),
             Self::Updated => String::from("Timeline successfully updated"),
-            Self::Deleted => String::from("Timeline successfully deleted"),
-
+            Self::Valid => String::from("Timeline is valid"),
             Self::Invalid(error) => format!("Timeline is invalid: {error}"),
-
-            Self::HasBeenDeletedElseWhere => String::from("Timeline was deleted elsewhere"),
         };
         ui.add(egui::Label::new(str).truncate())
     }
@@ -227,11 +218,6 @@ impl Valid for TimelineEditGui {
 }
 
 impl TimelineEditGui {
-    /// Get whether the window is for editing or creating an timeline
-    pub fn create_or_edit(&self) -> CreateOrEdit {
-        self.create_or_edit.clone()
-    }
-
     /// Get the ID of the timeline being edited (or none if it's being created)
     pub fn timeline_id(&self) -> Option<OpenTimelineId> {
         self.timeline_id
@@ -347,10 +333,14 @@ impl TimelineEditGui {
             self.rx_create_update = Some(rx);
             self.crud_op_requested = Some(CrudOperationRequested::CreateOrUpdate);
             let timeline = self.to_opentimeline_type();
-            let create_or_edit = self.create_or_edit.clone();
+            let create_or_edit = self.create_or_edit;
             let shared_config = Arc::clone(&self.shared_config);
+            self.status = match create_or_edit {
+                CreateOrEdit::Create => Status::RequestingCreate,
+                CreateOrEdit::Edit => Status::RequestingUpdate,
+            };
             tokio::spawn(
-                async move { save_crud(shared_config, &create_or_edit, timeline, tx).await },
+                async move { save_crud(shared_config, create_or_edit, timeline, tx).await },
             );
         }
     }
@@ -362,6 +352,7 @@ impl TimelineEditGui {
         self.crud_op_requested = Some(CrudOperationRequested::Delete);
         let timeline_id = self.timeline_id.unwrap();
         let shared_config = Arc::clone(&self.shared_config);
+        self.status = Status::RequestingDelete;
         tokio::spawn(async move {
             delete_from_id_crud::<TimelineEdit>(shared_config, timeline_id, tx).await
         });
@@ -379,11 +370,15 @@ impl TimelineEditGui {
                     self.crud_op_requested = None;
                     match result {
                         Ok(timeline) => {
-                            self.set_from_timeline(timeline);
+                            info!("Timeline updated sucessfully");
+
+                            // Must become before calling `self.set_from_timeline()`
                             self.status = match self.create_or_edit {
                                 CreateOrEdit::Create => Status::Created,
                                 CreateOrEdit::Edit => Status::Updated,
                             };
+
+                            self.set_from_timeline(timeline);
                             let _ = self.tx_crud_operation_executed.send(());
                         }
                         Err(error) => {
@@ -408,7 +403,6 @@ impl TimelineEditGui {
                     self.crud_op_requested = None;
                     match result {
                         Ok(()) => {
-                            self.status = Status::Deleted;
                             self.set_deleted_status(DeletedStatus::Deleted(Instant::now()));
                             let _ = self.tx_crud_operation_executed.send(());
                         }
@@ -600,7 +594,11 @@ impl BreakOutWindow for TimelineEditGui {
             ValidityAsynchronous::Invalid(error) => self.status = Status::Invalid(error),
 
             // TODO: this is wrong
-            ValidityAsynchronous::Valid => self.status = Status::NewWindowForEditing,
+            ValidityAsynchronous::Valid => {
+                if matches!(self.status, Status::Invalid(_)) {
+                    self.status = Status::Valid;
+                }
+            }
             ValidityAsynchronous::Waiting => (),
         }
 
@@ -691,7 +689,7 @@ impl BreakOutWindow for TimelineEditGui {
 
     fn viewport_id(&mut self) -> ViewportId {
         ViewportId(eframe::egui::Id::from({
-            match self.create_or_edit() {
+            match self.create_or_edit {
                 CreateOrEdit::Create => format!("timeline_create_{}", OpenTimelineId::new()),
                 CreateOrEdit::Edit => {
                     format!("timeline_edit_{}", self.timeline_id().unwrap())
@@ -701,7 +699,7 @@ impl BreakOutWindow for TimelineEditGui {
     }
 
     fn title(&mut self) -> String {
-        match self.create_or_edit() {
+        match self.create_or_edit {
             CreateOrEdit::Create => {
                 format!("Create Timeline • {}", self.name.name)
             }
