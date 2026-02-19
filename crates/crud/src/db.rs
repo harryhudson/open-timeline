@@ -4,6 +4,7 @@
 //! Create & migrate SQLite database files for OpenTimeline
 //!
 
+use log::info;
 use sqlx::{Sqlite, SqlitePool, migrate::MigrateDatabase};
 use std::path::Path;
 
@@ -20,10 +21,10 @@ pub async fn setup_database_at_path(path: &Path) -> Result<(), sqlx::Error> {
 
     // Create the database file (if not already extant)
     if !Sqlite::database_exists(&db_url).await.unwrap_or(false) {
-        println!("Creating database at {}", path.to_string_lossy());
+        info!("Creating database at {}", path.to_string_lossy());
         Sqlite::create_database(&db_url).await?;
     } else {
-        println!("Database already exists at {}", path.to_string_lossy());
+        info!("Database already exists at {}", path.to_string_lossy());
     }
 
     // Open a connection
@@ -32,7 +33,7 @@ pub async fn setup_database_at_path(path: &Path) -> Result<(), sqlx::Error> {
     // Run migrations (uses compile-time embedding of migrations)
     sqlx::migrate!("./migrations").run(&pool).await?;
 
-    println!(
+    info!(
         "Migrations applied successfully to {}",
         path.to_string_lossy()
     );

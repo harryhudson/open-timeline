@@ -7,8 +7,8 @@
 use crate::app::{ActionRequest, UnboundedChannel};
 use crate::app_colours::{AppColours, ColourTheme};
 use crate::config::{Config, SharedConfig};
-use eframe::egui::{self, Context, Grid, Response, RichText, ScrollArea, Spinner, Ui};
-use log::{error, info};
+use eframe::egui::{self, Context, Grid, Response, RichText, Spinner, Ui};
+use log::info;
 use open_timeline_crud::{CrudError, db_url_from_path};
 use open_timeline_gui_core::{CheckForUpdates, Draw};
 use open_timeline_gui_core::{DisplayStatus, GuiStatus};
@@ -232,7 +232,7 @@ impl SettingsGui {
     fn select_existing_database(&mut self, ui: &mut Ui) {
         if open_timeline_gui_core::Button::tall_full_width(ui, "Use Existing").clicked() {
             if let Some(db_path) = rfd::FileDialog::new().pick_file() {
-                println!("Selected file: {}", db_path.display());
+                info!("Selected file: {}", db_path.display());
                 self.config.set_database_path(&db_path);
                 let (tx, rx) = tokio::sync::mpsc::channel(1);
                 self.rx_database_config_update = Some(rx);
@@ -305,18 +305,17 @@ impl SettingsGui {
         if let Some(rx) = self.rx_database_config_update.as_mut() {
             match rx.try_recv() {
                 Ok(result) => {
+                    debug!("Recv timeline selection update response");
                     self.rx_database_config_update = None;
                     match result {
                         Ok(()) => self.request_switch_database_pools(),
                         Err(CrudError::DbMigrate(error)) => {
                             self.status = Status::DatabaseHasDifferentSchema;
-                            error!(
-                                "Error - database is likely for a different application: {error}"
-                            )
+                            warn!("Error - database is likely for a different application: {error}")
                         }
                         Err(error) => {
                             self.status = Status::CrudError(error.clone());
-                            error!("Error: {error}");
+                            warn!("Error: {error}");
                         }
                     }
                 }
@@ -331,13 +330,14 @@ impl SettingsGui {
         if let Some(rx) = self.rx_theme_update.as_mut() {
             match rx.try_recv() {
                 Ok(result) => {
+                    debug!("Recv theme selection update");
                     self.rx_theme_update = None;
                     self.show_save_colours_button = false;
                     match result {
                         Ok(()) => self.status = Status::SuccessfullyChangedTheme,
                         Err(error) => {
                             self.status = Status::CrudError(error.clone());
-                            error!("Error: {error}");
+                            warn!("Error: {error}");
                         }
                     }
                 }
@@ -353,6 +353,7 @@ impl SettingsGui {
         if let Some(rx) = self.rx_switch_database_update.as_mut() {
             match rx.try_recv() {
                 Ok(result) => {
+                    debug!("Recv switch database update");
                     self.rx_switch_database_update = None;
                     match result {
                         Ok(()) => {
@@ -363,7 +364,7 @@ impl SettingsGui {
                         }
                         Err(error) => {
                             self.status = Status::CrudError(error.clone());
-                            error!("Error: {error}");
+                            warn!("Error: {error}");
                         }
                     }
                 }

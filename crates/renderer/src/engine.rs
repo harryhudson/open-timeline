@@ -24,12 +24,12 @@ pub use consts::*;
 pub use entity::*;
 pub use events::*;
 pub use heading::*;
+use log::{debug, trace};
 pub use point::*;
 pub use primitives::*;
 
 use crate::colour::Colour;
 use bool_tag_expr::BoolTagExpr;
-use log::*;
 use open_timeline_core::{Date, Day, Entity, HasIdAndName, Month, OpenTimelineId, Year};
 use std::collections::BTreeSet;
 

@@ -430,6 +430,7 @@ impl OpenTimelineApp {
         let tx_crud = self.channel_crud_operation_executed.tx.clone();
         let tx_req = self.channel_action_request.tx.clone();
         if let Ok(msg) = self.channel_action_request.rx.try_recv() {
+            info!("New ActionRequest received");
             let window: Box<dyn BreakOutWindow> = match msg {
                 // Entity windows
                 ActionRequest::Entity(action) => match action {
@@ -495,7 +496,8 @@ impl App for OpenTimelineApp {
         };
 
         // Check if there have been any CRUD operations and thus if a reload is in order
-        if let Ok(()) = self.channel_crud_operation_executed.rx.try_recv() {
+        if self.channel_crud_operation_executed.rx.try_recv().is_ok() {
+            debug!("CRUD operation executed");
             self.reload_required = true;
             self.windows.request_reload();
             self.search_gui.request_reload();
@@ -558,10 +560,15 @@ impl CheckForUpdates for OpenTimelineApp {
             || self.entity_tag_counts_gui.waiting_for_updates()
             || self.timeline_counts_gui.waiting_for_updates()
         {
+            debug!("There are updates being waited on (main panel)");
             return true;
         }
 
         // Break out windows
-        self.windows.waiting_for_updates()
+        let waiting = self.windows.waiting_for_updates();
+        if waiting {
+            debug!("There are updates being waited on (break out window)");
+        }
+        waiting
     }
 }

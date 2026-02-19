@@ -30,6 +30,9 @@ pub use reduced::*;
 pub use timeline_edit::*;
 pub use timeline_view::*;
 
+#[macro_use]
+extern crate log;
+
 // TODO: is this used anywhere (variants could/should hold the more specific Errors)
 /// Errors that can be returned by OpenTimeline
 #[derive(Debug)]

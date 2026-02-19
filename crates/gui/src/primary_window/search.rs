@@ -495,6 +495,7 @@ where
     fn check_reload_response(&mut self) {
         if let Some(rx) = self.rx_search_results.as_mut() {
             if let Ok(data) = rx.try_recv() {
+                debug!("Recv search results");
                 self.rx_search_results = None;
                 match data {
                     Ok(results) => self.search_results = results,

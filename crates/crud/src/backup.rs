@@ -6,6 +6,7 @@
 
 use crate::crud::{Create, CrudError, FetchById, Update};
 use crate::{is_entity_id_in_db, is_timeline_id_in_db};
+use log::warn;
 use open_timeline_core::{Entity, HasIdAndName, OpenTimelineId, TimelineEdit};
 use sqlx::{Sqlite, Transaction};
 use std::fs::File;
@@ -214,7 +215,7 @@ async fn merge_timelines(
     // TODO (do for restore_entities too) (keep?)
     let metadata = std::fs::metadata(backup_dir.clone()).map_err(BackupRestoreMergeError::StdIo)?;
     if metadata.len() == 0 {
-        eprintln!("No timelines to restore: {backup_dir:?} is empty");
+        warn!("No timelines to restore: {backup_dir:?} is empty");
         return Ok(());
     }
 

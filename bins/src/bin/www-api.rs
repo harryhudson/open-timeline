@@ -8,6 +8,10 @@ use clap::{CommandFactory, Parser};
 use open_timeline_www_api::{ApiAccessMode, ApiMode, prepare_api_router};
 use std::path::PathBuf;
 
+#[macro_use]
+extern crate log;
+extern crate simplelog;
+
 /// OpenTimeline www API entry point (serve the www JSON API)
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -27,7 +31,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         // Invalid
         //----------------------------------------------------------------------
         _ => {
-            eprintln!("CLI Error: invalid options");
+            error!("CLI Error: invalid options");
             Cli::command().print_long_help().unwrap();
             std::process::exit(1);
         }
@@ -62,7 +66,7 @@ async fn serve(db_url: &str, read_only: bool, dynamic: bool) {
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
 
     // Print the address
-    println!("http://{addr}");
+    info!("http://{addr}");
 
     // Serve the server
     axum::serve(listener, api_router).await.unwrap();

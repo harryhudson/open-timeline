@@ -101,6 +101,7 @@ impl TimelineEntityGui {
     fn check_for_search_result_response(&mut self) {
         if let Some(rx) = self.rx_search_results.as_mut() {
             if let Ok(Ok(results)) = rx.try_recv() {
+                debug!("Recv timeline entity search response");
                 self.rx_search_results = None;
                 self.search_results = results
                     .names()
@@ -157,13 +158,16 @@ impl ValidAsynchronous for TimelineEntityGui {
     fn check_for_asynchronous_validity_response(&mut self) {
         if let Some(rx) = self.validity.rx_asynchronous.as_mut() {
             match rx.try_recv() {
-                Ok(msg) => match msg {
-                    Ok(reduced_entity) => {
-                        self.as_reduced_entity = Some(reduced_entity);
-                        self.validity.asynchronous = Some(Ok(()));
+                Ok(msg) => {
+                    debug!("Recv async validity response");
+                    match msg {
+                        Ok(reduced_entity) => {
+                            self.as_reduced_entity = Some(reduced_entity);
+                            self.validity.asynchronous = Some(Ok(()));
+                        }
+                        Err(error) => self.validity.asynchronous = Some(Err(error)),
                     }
-                    Err(error) => self.validity.asynchronous = Some(Err(error)),
-                },
+                }
                 Err(TryRecvError::Empty) => self.validity.asynchronous = None,
                 Err(TryRecvError::Disconnected) => self.validity.rx_asynchronous = None,
             }

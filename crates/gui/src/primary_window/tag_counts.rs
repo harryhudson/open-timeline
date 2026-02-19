@@ -331,17 +331,20 @@ impl Reload for TagCountsGui {
     fn check_reload_response(&mut self) {
         if let Some(rx) = self.rx_reload.as_mut() {
             match rx.try_recv() {
-                Ok(msg) => match msg {
-                    Ok(tag_counts) => {
-                        self.tag_counts = Some(tag_counts);
-                        self.paginator.set_page_index(0);
-                        self.update_filtered_tag_counts();
-                        self.rx_reload = None;
-                        self.update_sort();
-                        self.requested_reload = false;
+                Ok(msg) => {
+                    debug!("Recv tag counts response");
+                    match msg {
+                        Ok(tag_counts) => {
+                            self.tag_counts = Some(tag_counts);
+                            self.paginator.set_page_index(0);
+                            self.update_filtered_tag_counts();
+                            self.rx_reload = None;
+                            self.update_sort();
+                            self.requested_reload = false;
+                        }
+                        Err(error) => warn!("Error fetching tag counts: {error}"),
                     }
-                    Err(error) => eprintln!("Error fetching tag counts: {error}"),
-                },
+                }
                 Err(TryRecvError::Empty) => (),
                 Err(TryRecvError::Disconnected) => (),
             }

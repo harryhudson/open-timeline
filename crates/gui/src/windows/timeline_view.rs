@@ -261,6 +261,7 @@ impl Reload for TimelineViewGui {
         if let Some(rx) = self.rx_reload.as_mut() {
             match rx.try_recv() {
                 Ok(result) => {
+                    debug!("Recv timeline view reload response");
                     self.rx_reload = None;
                     self.requested_reload = false;
                     match result {
@@ -276,7 +277,7 @@ impl Reload for TimelineViewGui {
                         Err(CrudError::IdNotInDb) => {
                             self.set_deleted_status(DeletedStatus::Deleted(Instant::now()))
                         }
-                        Err(error) => eprintln!("Timeline view fetch error: {error}"),
+                        Err(error) => warn!("Timeline view fetch error: {error}"),
                     }
                 }
                 Err(TryRecvError::Empty) => (),

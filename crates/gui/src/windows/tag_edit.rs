@@ -199,6 +199,7 @@ impl TagBulkEditGui {
         if let Some(rx) = self.rx_update.as_mut() {
             match rx.try_recv() {
                 Ok(result) => {
+                    debug!("Recv tag bulk edit create/update request response");
                     self.rx_update = None;
                     match result {
                         Ok(()) => {
@@ -222,6 +223,7 @@ impl TagBulkEditGui {
             let deleted_tag = self.database_entry.clone();
             match rx.try_recv() {
                 Ok(result) => {
+                    debug!("Recv tag bulk edit delete request response");
                     self.rx_delete = None;
                     match result {
                         Ok(()) => {
