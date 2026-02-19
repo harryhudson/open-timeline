@@ -33,7 +33,7 @@ pub trait ToOpenTimelineType<T> {
 /// after the running of the target CRUD operation if it is successful.
 pub async fn save_crud<T>(
     shared_config: SharedConfig,
-    edit_or_create: &CreateOrEdit,
+    edit_or_create: CreateOrEdit,
     mut value: T,
     tx: Sender<Result<T, CrudError>>,
 ) where
