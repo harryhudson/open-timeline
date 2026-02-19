@@ -14,7 +14,7 @@ use bool_tag_expr::Tag;
 use eframe::egui::{CentralPanel, Context, ScrollArea, Vec2, ViewportId};
 use open_timeline_core::{IsReducedCollection, IsReducedType};
 use open_timeline_crud::{CrudError, FetchAllWithTag, ReducedAll};
-use open_timeline_gui_core::{BreakOutWindow, Reload, Shortcut, window_has_focus};
+use open_timeline_gui_core::{BreakOutWindow, CheckForUpdates, Reload, Shortcut, window_has_focus};
 use std::hash::{DefaultHasher, Hash, Hasher};
 use std::sync::Arc;
 use std::time::Instant;
@@ -141,6 +141,20 @@ impl Deleted for TagViewGui {
     }
 }
 
+impl CheckForUpdates for TagViewGui {
+    fn check_for_updates(&mut self) {
+        self.check_reload_response();
+    }
+
+    fn waiting_for_updates(&mut self) -> bool {
+        let waiting = self.rx_reload.is_some();
+        if waiting {
+            info!("TagViewGui is waiting for updates");
+        }
+        waiting
+    }
+}
+
 impl BreakOutWindow for TagViewGui {
     fn draw(&mut self, ctx: &Context) {
         // Handle shortcuts
@@ -150,9 +164,6 @@ impl BreakOutWindow for TagViewGui {
 
         // Check for global shortcuts
         global_shortcuts(ctx, &mut self.tx_action_request);
-
-        // Check for reload
-        self.check_reload_response();
 
         CentralPanel::default().show(ctx, |ui| {
             // Tag

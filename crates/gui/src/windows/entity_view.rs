@@ -18,7 +18,9 @@ use eframe::egui::{
 use egui_extras::{Column, TableBuilder};
 use open_timeline_core::{Entity, HasIdAndName, OpenTimelineId};
 use open_timeline_crud::{CrudError, FetchById};
-use open_timeline_gui_core::{BreakOutWindow, Reload, body_text_height, widget_x_spacing};
+use open_timeline_gui_core::{
+    BreakOutWindow, CheckForUpdates, Reload, body_text_height, widget_x_spacing,
+};
 use open_timeline_gui_core::{Shortcut, window_has_focus};
 use std::sync::Arc;
 use std::time::Instant;
@@ -131,6 +133,20 @@ impl Deleted for EntityViewGui {
     }
 }
 
+impl CheckForUpdates for EntityViewGui {
+    fn check_for_updates(&mut self) {
+        self.check_reload_response();
+    }
+
+    fn waiting_for_updates(&mut self) -> bool {
+        let waiting = self.rx_reload.is_some();
+        if waiting {
+            info!("EntityViewGui is waiting for updates");
+        }
+        waiting
+    }
+}
+
 impl BreakOutWindow for EntityViewGui {
     fn draw(&mut self, ctx: &Context) {
         // Handle shortcuts
@@ -140,9 +156,6 @@ impl BreakOutWindow for EntityViewGui {
 
         // Check for global shortcuts
         global_shortcuts(ctx, &mut self.tx_action_request);
-
-        // Check for reload
-        self.check_reload_response();
 
         CentralPanel::default().show(ctx, |ui| {
             if self.requested_reload {

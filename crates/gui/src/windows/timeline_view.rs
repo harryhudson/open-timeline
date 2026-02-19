@@ -18,7 +18,7 @@ use eframe::egui::{
 use open_timeline_core::{Date, MAX_YEAR, MIN_YEAR, Name, OpenTimelineId, TimelineView};
 use open_timeline_crud::{CrudError, FetchById};
 use open_timeline_gui_core::{
-    BreakOutWindow, Draw, Reload, body_text_height, font_size, window_has_focus,
+    BreakOutWindow, CheckForUpdates, Draw, Reload, body_text_height, font_size, window_has_focus,
 };
 use open_timeline_gui_core::{EmptyConsideredInvalid, Shortcut, ShowRemoveButton};
 use open_timeline_renderer::frontends::desktop_egui::OpenTimelineRendererEgui;
@@ -296,6 +296,20 @@ impl Deleted for TimelineViewGui {
     }
 }
 
+impl CheckForUpdates for TimelineViewGui {
+    fn check_for_updates(&mut self) {
+        self.check_reload_response();
+    }
+
+    fn waiting_for_updates(&mut self) -> bool {
+        let waiting = self.rx_reload.is_some();
+        if waiting {
+            info!("TimelineViewGui is waiting for updates");
+        }
+        waiting
+    }
+}
+
 impl BreakOutWindow for TimelineViewGui {
     fn draw(&mut self, ctx: &Context) {
         // Handle shortcuts
@@ -305,9 +319,6 @@ impl BreakOutWindow for TimelineViewGui {
 
         // Check for global shortcuts
         global_shortcuts(ctx, &mut self.tx_action_request);
-
-        // Check for reload
-        self.check_reload_response();
 
         // Draw
         CentralPanel::default().show(ctx, |ui| {
