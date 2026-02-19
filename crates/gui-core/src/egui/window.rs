@@ -4,11 +4,11 @@
 //! Those things used across the OpenTimeline GUI crate
 //!
 
-use crate::Reload;
+use crate::{CheckForUpdates, Reload};
 use eframe::egui::{Context, Vec2, ViewportId};
 
 /// Implementing types are GUI windows
-pub trait BreakOutWindow: Reload {
+pub trait BreakOutWindow: Reload + CheckForUpdates {
     fn draw(&mut self, ctx: &Context);
     fn default_size(&self) -> Vec2;
     fn viewport_id(&mut self) -> ViewportId;

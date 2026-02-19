@@ -7,12 +7,14 @@
 //! application uses that other projects may also wish to use.
 //!
 
+mod check_for_updates;
 mod egui;
 mod enums;
 mod helpers;
 mod reload;
 mod validity;
 
+pub use check_for_updates::*;
 pub use egui::*;
 pub use enums::*;
 pub use helpers::*;
