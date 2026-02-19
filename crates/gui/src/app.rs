@@ -28,7 +28,8 @@ use eframe::egui::{
 use open_timeline_core::OpenTimelineId;
 use open_timeline_crud::db_url_from_path;
 use open_timeline_gui_core::{
-    BreakOutWindow, Draw, Reload, using_wayland, widget_x_spacing, widget_y_spacing,
+    BreakOutWindow, CheckForUpdates, Draw, Reload, using_wayland, widget_x_spacing,
+    widget_y_spacing,
 };
 use sqlx::{Pool, Sqlite, SqlitePool};
 use std::sync::Arc;
@@ -478,8 +479,10 @@ impl OpenTimelineApp {
 
 impl App for OpenTimelineApp {
     fn update(&mut self, ctx: &Context, _frame: &mut eframe::Frame) {
-        ctx.request_repaint_after(Duration::from_millis(300));
+        // Check for any updates
+        self.check_for_updates();
 
+        //
         // TODO: don't need to do every frame, only if changed
         // Update the colour theme
         self.settings_gui.check_for_app_colours_update();
@@ -521,5 +524,44 @@ impl App for OpenTimelineApp {
 
         // The reload is requested in a single frame
         self.reload_required = false;
+
+        // Waiting for any updates
+        if self.waiting_for_updates() {
+            ctx.request_repaint_after(Duration::from_millis(50));
+        }
+    }
+}
+
+impl CheckForUpdates for OpenTimelineApp {
+    fn check_for_updates(&mut self) {
+        // TODO: rename these fields
+        // Main window panels
+        self.backup_merge_restore_gui.check_for_updates();
+        self.settings_gui.check_for_updates();
+        self.stats_gui.check_for_updates();
+        self.entity_counts_gui.check_for_updates();
+        self.search_gui.check_for_updates();
+        self.entity_tag_counts_gui.check_for_updates();
+        self.timeline_counts_gui.check_for_updates();
+
+        // Break out windows
+        self.windows.check_for_updates();
+    }
+
+    fn waiting_for_updates(&mut self) -> bool {
+        // Main window panels
+        if self.backup_merge_restore_gui.waiting_for_updates()
+            || self.settings_gui.waiting_for_updates()
+            || self.stats_gui.waiting_for_updates()
+            || self.entity_counts_gui.waiting_for_updates()
+            || self.search_gui.waiting_for_updates()
+            || self.entity_tag_counts_gui.waiting_for_updates()
+            || self.timeline_counts_gui.waiting_for_updates()
+        {
+            return true;
+        }
+
+        // Break out windows
+        self.windows.waiting_for_updates()
     }
 }
