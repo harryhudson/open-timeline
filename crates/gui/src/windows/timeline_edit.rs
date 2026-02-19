@@ -305,7 +305,23 @@ impl TimelineEditGui {
             EntityOrTimeline::Timeline,
             timeline.name().clone(),
         );
-        self.bool_expr = timeline.bool_expr().clone().into();
+
+        //
+        let show_remove_button = ShowRemoveButton::Yes;
+        let empty_considered_invalid = EmptyConsideredInvalid::Yes;
+        let hint_text = HintText::None;
+        self.bool_expr = match timeline.bool_expr() {
+            Some(expr) => BooleanExpressionGui::from_bool_tag_expr(
+                show_remove_button,
+                empty_considered_invalid,
+                hint_text,
+                expr.clone(),
+            ),
+            None => {
+                BooleanExpressionGui::new(show_remove_button, empty_considered_invalid, hint_text)
+            }
+        };
+
         self.entities = TimelineEntitiesGui::from_reduced_entities(
             Arc::clone(&self.shared_config),
             timeline.entities().clone(),
@@ -592,8 +608,6 @@ impl BreakOutWindow for TimelineEditGui {
         // Update the status
         match self.validity() {
             ValidityAsynchronous::Invalid(error) => self.status = Status::Invalid(error),
-
-            // TODO: this is wrong
             ValidityAsynchronous::Valid => {
                 if matches!(self.status, Status::Invalid(_)) {
                     self.status = Status::Valid;
@@ -652,7 +666,6 @@ impl BreakOutWindow for TimelineEditGui {
                         if open_timeline_gui_core::Button::remove(ui).clicked() {
                             self.has_expr = false;
                             self.update_validity_synchronous();
-                            dbg!(self.validity_synchronous());
                         }
                     });
                 } else {
@@ -661,7 +674,6 @@ impl BreakOutWindow for TimelineEditGui {
                     if open_timeline_gui_core::Button::add(ui).clicked() {
                         self.has_expr = true;
                         self.update_validity_synchronous();
-                        dbg!(self.validity_synchronous());
                     }
                 }
                 ui.separator();
