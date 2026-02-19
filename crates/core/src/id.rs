@@ -19,6 +19,7 @@ pub struct OpenTimelineId(Uuid);
 impl OpenTimelineId {
     /// Create a new `OpenTimelineId`
     pub fn new() -> Self {
+        debug!("Creating new OpenTimelineId");
         Self(Uuid::new_v4())
     }
 

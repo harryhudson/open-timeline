@@ -114,20 +114,20 @@ impl BackupMergeRestoreGui {
         if let Some(backup_merge_restore) = &self.backup_merge_restore {
             if let Some(rx) = self.rx_backup_restore_merge_update.as_mut() {
                 match rx.try_recv() {
-                    Ok(result) => match result {
-                        // The operation succeeded
-                        Ok(()) => {
-                            self.rx_backup_restore_merge_update = None;
-                            self.status = Status::Success(backup_merge_restore.to_owned());
-                            let _ = self.tx_crud_operation_executed.send(());
+                    Ok(result) => {
+                        debug!("Recv backup|merge|restore update response");
+                        match result {
+                            Ok(()) => {
+                                self.rx_backup_restore_merge_update = None;
+                                self.status = Status::Success(backup_merge_restore.to_owned());
+                                let _ = self.tx_crud_operation_executed.send(());
+                            }
+                            Err(error) => {
+                                self.rx_backup_restore_merge_update = None;
+                                self.status = Status::Failure(error);
+                            }
                         }
-
-                        // The operation failed
-                        Err(error) => {
-                            self.rx_backup_restore_merge_update = None;
-                            self.status = Status::Failure(error);
-                        }
-                    },
+                    }
                     Err(TryRecvError::Empty) => (),
                     Err(TryRecvError::Disconnected) => (),
                 }

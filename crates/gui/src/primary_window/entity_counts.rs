@@ -382,17 +382,20 @@ impl Reload for EntityCountsGui {
     fn check_reload_response(&mut self) {
         if let Some(rx) = self.rx_reload.as_mut() {
             match rx.try_recv() {
-                Ok(msg) => match msg {
-                    Ok(entity_counts) => {
-                        self.entity_counts = Some(entity_counts);
-                        self.paginator.set_page_index(0);
-                        self.update_filtered_entity_counts();
-                        self.rx_reload = None;
-                        self.update_sort();
-                        self.requested_reload = false;
+                Ok(msg) => {
+                    debug!("Recv entity tag counts response");
+                    match msg {
+                        Ok(entity_counts) => {
+                            self.entity_counts = Some(entity_counts);
+                            self.paginator.set_page_index(0);
+                            self.update_filtered_entity_counts();
+                            self.rx_reload = None;
+                            self.update_sort();
+                            self.requested_reload = false;
+                        }
+                        Err(error) => warn!("Error fetching entity counts: {error}"),
                     }
-                    Err(error) => eprintln!("Error fetching entity counts: {error}"),
-                },
+                }
                 Err(TryRecvError::Empty) => (),
                 Err(TryRecvError::Disconnected) => (),
             }

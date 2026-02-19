@@ -53,7 +53,7 @@ impl DecadesGameGui {
                                         egui::Button::new(format!("{answer}")),
                                     );
                                     if answer_button.clicked() {
-                                        println!("Correct");
+                                        info!("Correct");
                                         self.game.current_selection = Some(answer);
                                         let _ = self.game.check_answer(answer);
                                         self.state = GameState::WaitingForNextRound;
@@ -65,7 +65,7 @@ impl DecadesGameGui {
                                         egui::Button::new(format!("{answer}")),
                                     );
                                     if answer_button.clicked() {
-                                        println!("Incorrect");
+                                        info!("Incorrect");
                                         self.game.current_selection = Some(answer);
                                         let _ = self.game.check_answer(answer);
                                         self.state = GameState::WaitingForNextRound;

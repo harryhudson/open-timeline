@@ -126,6 +126,7 @@ impl Reload for TagViewGui {
         if let Some(rx) = self.rx_reload.as_mut() {
             match rx.try_recv() {
                 Ok(received) => {
+                    debug!("Recv tag view reload response");
                     self.rx_reload = None;
                     self.requested_reload = false;
                     match received {
@@ -141,7 +142,7 @@ impl Reload for TagViewGui {
                         }
                         // TODO: deleted?
                         Err(error) => {
-                            eprintln!("Tag view error: {error}");
+                            warn!("Tag view error: {error}");
                             self.status = Status::FailedToFetch(error);
                         }
                     }

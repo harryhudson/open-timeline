@@ -66,14 +66,17 @@ impl Reload for StatsGui {
     fn check_reload_response(&mut self) {
         if let Some(rx) = self.rx_reload.as_mut() {
             match rx.try_recv() {
-                Ok(msg) => match msg {
-                    Ok(row_counts) => {
-                        self.table_row_counts = Some(row_counts);
-                        self.rx_reload = None;
-                        self.requested_reload = false;
+                Ok(msg) => {
+                    debug!("Recv database row count response");
+                    match msg {
+                        Ok(row_counts) => {
+                            self.table_row_counts = Some(row_counts);
+                            self.rx_reload = None;
+                            self.requested_reload = false;
+                        }
+                        Err(_) => todo!(),
                     }
-                    Err(_) => todo!(),
-                },
+                }
                 Err(TryRecvError::Empty) => (),
                 Err(TryRecvError::Disconnected) => (),
             }

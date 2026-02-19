@@ -106,6 +106,7 @@ impl Reload for EntityViewGui {
         if let Some(rx) = self.rx_reload.as_mut() {
             match rx.try_recv() {
                 Ok(result) => {
+                    debug!("Recv entity view reload response");
                     self.rx_reload = None;
                     self.requested_reload = false;
                     match result {

@@ -13,7 +13,7 @@ use bool_tag_expr::BoolTagExpr;
 use eframe::egui::{
     Align2, Color32, Context, FontId, Id, Pos2, Rect, Sense, Stroke, StrokeKind, Ui, Vec2,
 };
-use log::*;
+use log::{debug, info};
 use open_timeline_core::{Date, Entity, HasIdAndName};
 
 /// The HTML canvas engine for use on the web

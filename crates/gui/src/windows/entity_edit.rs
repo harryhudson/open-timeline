@@ -404,7 +404,7 @@ impl EntityEditGui {
         if let Some(rx) = self.rx_create_update.as_mut() {
             match rx.try_recv() {
                 Ok(result) => {
-                    debug!("recv crud update");
+                    debug!("Recv entity create/update response");
                     self.rx_create_update = None;
                     self.crud_op_requested = None;
                     match result {
@@ -434,6 +434,7 @@ impl EntityEditGui {
         if let Some(rx) = self.rx_delete.as_mut() {
             match rx.try_recv() {
                 Ok(result) => {
+                    debug!("Recv entity delete request response");
                     self.rx_delete = None;
                     self.crud_op_requested = None;
                     match result {
@@ -492,7 +493,10 @@ impl Reload for EntityEditGui {
         if let Some(rx) = self.rx_reload.as_mut() {
             match rx.try_recv() {
                 Ok(result) => {
-                    debug!("reload response receved");
+                    debug!(
+                        "Recv entity reload response (entity name = {})",
+                        self.name.name
+                    );
                     self.rx_reload = None;
                     self.requested_reload = false;
                     match result {

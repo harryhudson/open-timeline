@@ -3278,6 +3278,7 @@ version = "0.1.0"
 dependencies = [
  "bool-tag-expr",
  "derive_more",
+ "log",
  "open-timeline-macros",
  "rand 0.8.5",
  "serde",

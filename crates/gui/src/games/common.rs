@@ -109,6 +109,7 @@ impl GameTimelineSearchAndFetch {
     pub fn check_for_fetch_response(&mut self) {
         if let Some(rx) = self.rx_timeline.as_mut() {
             if let Ok(result) = rx.try_recv() {
+                debug!("Recv fetch timeline response");
                 self.rx_timeline = None;
                 self.timeline = Some(result);
             }
