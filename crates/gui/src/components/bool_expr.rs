@@ -64,6 +64,25 @@ impl BooleanExpressionGui {
         new
     }
 
+    /// Create new `TimelineBooleanExpressionGui` from `BoolTagExpr`.
+    pub fn from_bool_tag_expr(
+        show_remove_button: ShowRemoveButton,
+        empty_considered_invalid: EmptyConsideredInvalid,
+        hint_text: HintText,
+        bool_tag_expr: BoolTagExpr,
+    ) -> Self {
+        let mut new = Self {
+            expr: bool_tag_expr.to_boolean_expression(),
+            validity: ValitityStatus::from(ValiditySynchronous::Valid, None),
+            show_remove_button,
+            hint_text,
+            empty_considered_invalid,
+            changed: false,
+        };
+        new.update_validity();
+        new
+    }
+
     pub fn changed(&self) -> bool {
         self.changed
     }
@@ -165,22 +184,5 @@ impl Draw for BooleanExpressionGui {
                 }
             }
         });
-    }
-}
-
-impl From<Option<BoolTagExpr>> for BooleanExpressionGui {
-    fn from(original_expr: Option<BoolTagExpr>) -> Self {
-        let (show_remove_button, expr_as_string) = match &original_expr {
-            None => (ShowRemoveButton::No, String::new()),
-            Some(expr) => (ShowRemoveButton::Yes, expr.clone().to_boolean_expression()),
-        };
-        Self {
-            expr: expr_as_string,
-            validity: ValitityStatus::from(ValiditySynchronous::Valid, None),
-            show_remove_button,
-            hint_text: HintText::None,
-            empty_considered_invalid: EmptyConsideredInvalid::Yes,
-            changed: false,
-        }
     }
 }
