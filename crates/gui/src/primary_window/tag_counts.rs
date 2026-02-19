@@ -17,7 +17,7 @@ use open_timeline_crud::{
     CrudError, SortAlphabetically, SortByNumber, TagCounts, fetch_all_entity_tag_counts,
 };
 use open_timeline_gui_core::{
-    Draw, Paginator, Reload, body_text_height, widget_x_spacing, widget_y_spacing,
+    CheckForUpdates, Draw, Paginator, Reload, body_text_height, widget_x_spacing, widget_y_spacing,
 };
 use std::sync::Arc;
 use tokio::sync::mpsc::error::TryRecvError;
@@ -351,8 +351,6 @@ impl Reload for TagCountsGui {
 
 impl Draw for TagCountsGui {
     fn draw(&mut self, ctx: &Context, ui: &mut Ui) {
-        self.check_reload_response();
-
         // Input to filter by text
         let filter_input = ui.add(
             TextEdit::singleline(&mut self.filter_text)
@@ -413,6 +411,20 @@ impl Draw for TagCountsGui {
 
         // Pagination controls
         self.paginator.draw(ctx, ui);
+    }
+}
+
+impl CheckForUpdates for TagCountsGui {
+    fn check_for_updates(&mut self) {
+        self.check_reload_response();
+    }
+
+    fn waiting_for_updates(&mut self) -> bool {
+        let waiting = self.rx_reload.is_some();
+        if waiting {
+            info!("TagCountsGui is waiting for updates");
+        }
+        waiting
     }
 }
 

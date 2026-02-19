@@ -10,7 +10,7 @@ use crate::config::{Config, SharedConfig};
 use eframe::egui::{self, Context, Grid, Response, RichText, ScrollArea, Spinner, Ui};
 use log::{error, info};
 use open_timeline_crud::{CrudError, db_url_from_path};
-use open_timeline_gui_core::Draw;
+use open_timeline_gui_core::{CheckForUpdates, Draw};
 use open_timeline_gui_core::{DisplayStatus, GuiStatus};
 use sqlx::SqlitePool;
 use tokio::sync::mpsc::error::TryRecvError;
@@ -394,11 +394,6 @@ impl SettingsGui {
 
 impl Draw for SettingsGui {
     fn draw(&mut self, ctx: &Context, ui: &mut Ui) {
-        self.check_for_database_selection_update();
-        self.check_for_theme_selection_update();
-        self.check_for_database_pool_switch_update();
-        self.check_for_app_colours_update();
-
         // Draw status
         GuiStatus::display(ui, &self.status);
         ui.separator();
@@ -407,5 +402,24 @@ impl Draw for SettingsGui {
             self.draw_database_settings(ctx, ui);
             self.draw_app_colour_settings(ctx, ui);
         });
+    }
+}
+
+impl CheckForUpdates for SettingsGui {
+    fn check_for_updates(&mut self) {
+        self.check_for_database_selection_update();
+        self.check_for_theme_selection_update();
+        self.check_for_database_pool_switch_update();
+        self.check_for_app_colours_update();
+    }
+
+    fn waiting_for_updates(&mut self) -> bool {
+        let waiting = self.rx_database_config_update.is_some()
+            || self.rx_switch_database_update.is_some()
+            || self.rx_theme_update.is_some();
+        if waiting {
+            info!("SettingsGui is waiting for updates");
+        }
+        waiting
     }
 }
