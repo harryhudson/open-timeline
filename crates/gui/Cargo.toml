@@ -29,4 +29,3 @@ serde_json = "1.0.135"
 sqlx = { version = "0.8.3", default-features = false, features = ["macros", "runtime-tokio", "sqlite", "migrate"] }
 thiserror = "2.0.11"
 tokio = { version = "1.42.0", default-features = false, features = ["macros", "rt-multi-thread", "sync"] }
-tempdir = "0.3.7"
