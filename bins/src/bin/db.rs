@@ -7,7 +7,7 @@
 //!
 
 use clap::{CommandFactory, Parser, ValueEnum, builder::PossibleValue};
-use open_timeline_crud::{db_url_from_path, restore, setup_database_at_path};
+use open_timeline_crud::OpenTimelineDatabase;
 use sqlx::{Connection, SqliteConnection};
 use std::path::PathBuf;
 
@@ -26,19 +26,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         //----------------------------------------------------------------------
         // Valid
         //----------------------------------------------------------------------
-        (Command::Create, database, _) => match setup_database_at_path(database).await {
-            Ok(()) => println!("Success"),
-            Err(error) => {
-                eprintln!("Error: {error}");
-                std::process::exit(1);
+        (Command::Create, database_path, _) => {
+            match OpenTimelineDatabase::setup_at_path(database_path).await {
+                Ok(()) => println!("Success"),
+                Err(error) => {
+                    eprintln!("Error: {error}");
+                    std::process::exit(1);
+                }
             }
-        },
-        (Command::Backup, _database, Some(_json)) => {
+        }
+        (Command::Backup, _database_path, Some(_json)) => {
             todo!()
         }
-        (Command::Restore, database, Some(json)) => {
+        (Command::Restore, database_path, Some(json)) => {
             // Generate database URL
-            let db_url = db_url_from_path(database);
+            let db_url = OpenTimelineDatabase::url_from_path(database_path);
 
             // Open database connection
             let mut connection = match SqliteConnection::connect(&db_url).await {
@@ -60,7 +62,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 };
 
             // Restore the database
-            match restore(&mut transaction, json.to_owned()).await {
+            match OpenTimelineDatabase::restore_from_dir(&mut transaction, json.to_owned()).await {
                 Ok(()) => (),
                 Err(error) => {
                     eprintln!("Error restoring database: {error}");

@@ -26,7 +26,7 @@ use eframe::egui::{
     self, Align, Button, CentralPanel, Context, Layout, OpenUrl, Pos2, SidePanel, Ui, Vec2,
 };
 use open_timeline_core::OpenTimelineId;
-use open_timeline_crud::db_url_from_path;
+use open_timeline_crud::OpenTimelineDatabase;
 use open_timeline_gui_core::{
     BreakOutWindow, CheckForUpdates, Draw, Reload, using_wayland, widget_x_spacing,
     widget_y_spacing,
@@ -225,7 +225,7 @@ impl OpenTimelineApp {
         tokio::spawn(async move {
             let result: Result<Pool<Sqlite>, sqlx::Error> = async move {
                 let db_path = db_path.read().await;
-                let db_url = db_url_from_path(&db_path);
+                let db_url = OpenTimelineDatabase::url_from_path(&db_path);
                 let db_pool = SqlitePool::connect(&db_url).await?;
                 Ok(db_pool)
             }

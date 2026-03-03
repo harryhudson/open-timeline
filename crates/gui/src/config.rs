@@ -7,7 +7,7 @@
 use crate::app_colours::{AppColours, ColourTheme};
 use directories_next::ProjectDirs;
 use log::info;
-use open_timeline_crud::{CrudError, setup_database_at_path};
+use open_timeline_crud::{CrudError, OpenTimelineDatabase};
 use serde::{Deserialize, Serialize};
 use sqlx::SqlitePool;
 use std::fs::{self, File};
@@ -87,7 +87,7 @@ impl Config {
             let new_config = default_config();
             new_config.save().await?;
             info!("Config created = {new_config:?}");
-            setup_database_at_path(&new_config.database_path).await?;
+            OpenTimelineDatabase::setup_at_path(&new_config.database_path).await?;
             info!("Database setup at {}", &new_config.database_path.display());
         };
         info!("Config is setup");
@@ -97,7 +97,7 @@ impl Config {
     pub async fn save(&self) -> Result<(), CrudError> {
         // Setup database
         let path = self.database_path.to_owned();
-        setup_database_at_path(&path).await?;
+        OpenTimelineDatabase::setup_at_path(&path).await?;
 
         // Save config to file
         let config_path = config_file_path()?;

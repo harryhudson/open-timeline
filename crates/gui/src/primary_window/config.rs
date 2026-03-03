@@ -9,7 +9,7 @@ use crate::app_colours::{AppColours, ColourTheme};
 use crate::config::{Config, SharedConfig};
 use eframe::egui::{self, Context, Grid, Response, RichText, Spinner, Ui};
 use log::info;
-use open_timeline_crud::{CrudError, db_url_from_path};
+use open_timeline_crud::{CrudError, OpenTimelineDatabase};
 use open_timeline_gui_core::{CheckForUpdates, Draw};
 use open_timeline_gui_core::{DisplayStatus, GuiStatus};
 use sqlx::SqlitePool;
@@ -280,7 +280,7 @@ impl SettingsGui {
         tokio::spawn(async move {
             let result = async move {
                 let mut shared_config = shared_config.write().await;
-                let db_url = db_url_from_path(&db_path);
+                let db_url = OpenTimelineDatabase::url_from_path(&db_path);
                 (*shared_config).db_pool = SqlitePool::connect(&db_url).await?;
                 Ok(())
             }

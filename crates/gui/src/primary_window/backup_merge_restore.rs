@@ -7,7 +7,7 @@
 use crate::config::SharedConfig;
 use eframe::egui::{self, Align, Context, Grid, Layout, Response, Spinner, TextEdit, Ui};
 use open_timeline_core::{Entity, TimelineEdit};
-use open_timeline_crud::{BackupMergeRestore, BackupRestoreMergeError, backup, merge, restore};
+use open_timeline_crud::{BackupRestoreMergeError, OpenTimelineDatabase};
 use open_timeline_gui_core::{CheckForUpdates, Draw};
 use open_timeline_gui_core::{DisplayStatus, GuiStatus};
 use std::fs::File;
@@ -39,6 +39,14 @@ pub struct BackupMergeRestoreGui {
 
     /// The OpenTimeline API endpoints
     open_timeline_api: ApiEndpoints,
+}
+
+/// Representation of backup/merge/restore
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
+pub enum BackupMergeRestore {
+    Backup,
+    Merge,
+    Restore,
 }
 
 /// Web API config for entities & timelines
@@ -157,9 +165,15 @@ impl BackupMergeRestoreGui {
             let outer_result = async {
                 let mut transaction = shared_config.read().await.db_pool.begin().await?;
                 match backup_merge_restore {
-                    BackupMergeRestore::Backup => backup(&mut transaction, target_dir).await?,
-                    BackupMergeRestore::Merge => merge(&mut transaction, target_dir).await?,
-                    BackupMergeRestore::Restore => restore(&mut transaction, target_dir).await?,
+                    BackupMergeRestore::Backup => {
+                        OpenTimelineDatabase::backup_to_dir(&mut transaction, target_dir).await?
+                    }
+                    BackupMergeRestore::Merge => {
+                        OpenTimelineDatabase::merge_from_dir(&mut transaction, target_dir).await?
+                    }
+                    BackupMergeRestore::Restore => {
+                        OpenTimelineDatabase::restore_from_dir(&mut transaction, target_dir).await?
+                    }
                 }
                 transaction
                     .commit()
@@ -234,8 +248,12 @@ impl BackupMergeRestoreGui {
                 let mut transaction = shared_config.read().await.db_pool.begin().await?;
                 match backup_merge_restore {
                     BackupMergeRestore::Backup => (),
-                    BackupMergeRestore::Merge => merge(&mut transaction, dir).await?,
-                    BackupMergeRestore::Restore => restore(&mut transaction, dir).await?,
+                    BackupMergeRestore::Merge => {
+                        OpenTimelineDatabase::merge_from_dir(&mut transaction, dir).await?
+                    }
+                    BackupMergeRestore::Restore => {
+                        OpenTimelineDatabase::restore_from_dir(&mut transaction, dir).await?
+                    }
                 }
                 transaction
                     .commit()
