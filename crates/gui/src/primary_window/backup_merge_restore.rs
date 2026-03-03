@@ -10,11 +10,8 @@ use open_timeline_core::{Entity, TimelineEdit};
 use open_timeline_crud::{BackupRestoreMergeError, OpenTimelineDatabase};
 use open_timeline_gui_core::{CheckForUpdates, Draw};
 use open_timeline_gui_core::{DisplayStatus, GuiStatus};
-use std::fs::File;
-use std::io::BufWriter;
 use std::path::PathBuf;
 use std::sync::Arc;
-use tempdir::TempDir;
 use tokio::sync::mpsc::UnboundedSender;
 use tokio::sync::mpsc::{Receiver, error::TryRecvError};
 
@@ -222,37 +219,21 @@ impl BackupMergeRestoreGui {
                     (timelines, entities)
                 };
 
-                // Save fetched to tmp file
-                let dir = {
-                    // Save the entities & timelines to files
-                    let tmp_dir = TempDir::new("open-timeline-gui-web-restore-merge")?.into_path();
-                    debug!("tmp dir = {}", tmp_dir.display());
-
-                    // Timelines
-                    let timelines_file = File::create(tmp_dir.join("timelines.json"))?;
-                    let timelines_writer = BufWriter::new(timelines_file);
-                    serde_json::to_writer_pretty(timelines_writer, &timelines)?;
-                    debug!("Wrote timelines to tmp file");
-
-                    // Entities
-                    let entities_file = File::create(tmp_dir.join("entities.json"))?;
-                    let entities_writer = BufWriter::new(entities_file);
-                    serde_json::to_writer_pretty(entities_writer, &entities)?;
-                    debug!("Wrote entities to tmp file");
-
-                    // Return the dir if all ok
-                    tmp_dir
-                };
-
                 // Merge or restore
                 let mut transaction = shared_config.read().await.db_pool.begin().await?;
                 match backup_merge_restore {
                     BackupMergeRestore::Backup => (),
                     BackupMergeRestore::Merge => {
-                        OpenTimelineDatabase::merge_from_dir(&mut transaction, dir).await?
+                        OpenTimelineDatabase::merge_from_data(&mut transaction, entities, timelines)
+                            .await?
                     }
                     BackupMergeRestore::Restore => {
-                        OpenTimelineDatabase::restore_from_dir(&mut transaction, dir).await?
+                        OpenTimelineDatabase::restore_from_data(
+                            &mut transaction,
+                            entities,
+                            timelines,
+                        )
+                        .await?
                     }
                 }
                 transaction
