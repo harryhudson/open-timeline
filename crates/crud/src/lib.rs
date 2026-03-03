@@ -19,12 +19,10 @@
 //! types, and is itself used by the `api` and `gui` crates.
 //!
 
-mod backup;
 mod crud;
 mod db;
 mod stats;
 
-pub use backup::*;
 pub use crud::*;
 pub use db::*;
 pub use stats::*;
@@ -47,7 +45,7 @@ pub enum SortAlphabetically {
 
 #[cfg(test)]
 pub mod test {
-    use crate::{Create, restore};
+    use crate::{Create, OpenTimelineDatabase};
     use open_timeline_core::{Entity, TimelineEdit};
     use sqlx::{Sqlite, Transaction};
     use std::fs::File;
@@ -62,7 +60,9 @@ pub mod test {
     pub async fn seed_db(transaction: &mut Transaction<'_, Sqlite>) {
         // Seed the database
         let dir = path_to_test_data().join("seed");
-        restore(transaction, dir.clone()).await.unwrap();
+        OpenTimelineDatabase::restore_from_dir(transaction, dir.clone())
+            .await
+            .unwrap();
     }
 
     pub async fn seed_db_return_timelines(
@@ -70,7 +70,9 @@ pub mod test {
     ) -> Vec<TimelineEdit> {
         // Seed the database
         let dir = path_to_test_data().join("seed");
-        restore(transaction, dir.clone()).await.unwrap();
+        OpenTimelineDatabase::restore_from_dir(transaction, dir.clone())
+            .await
+            .unwrap();
 
         // Get the timelines that seeded the database
         valid_timelines()
