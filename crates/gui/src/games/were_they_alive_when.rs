@@ -132,7 +132,7 @@ impl Draw for WereTheyAliveWhenGameGui {
                                 .partition(|entity| {
                                     entity.tags().clone().map_or(false, |tags| {
                                         tags.iter().any(|tag| {
-                                            tag.value == TagValue::from(&"person").unwrap()
+                                            tag.value == TagValue::from("person").unwrap()
                                         })
                                     })
                                 });

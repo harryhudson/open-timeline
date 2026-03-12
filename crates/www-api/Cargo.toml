@@ -11,7 +11,7 @@ homepage = "https://github.com/harryhudson/open-timeline"
 open-timeline-core = { workspace = true }
 open-timeline-crud = { workspace = true }
 
-bool-tag-expr = { version = "0.1.0-beta.1" }
+bool-tag-expr = { version = "0.1.0-beta.2" }
 axum = "0.8.1"
 log = "0.4.25"
 serde = { version = "1.0.217", features = ["derive"] }

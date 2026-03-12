@@ -16,7 +16,7 @@ include = [
 [dependencies]
 open-timeline-core = { workspace = true, features = ["sqlx"] }
 
-bool-tag-expr = { version = "0.1.0-beta.1",  features = ["sqlx"] }
+bool-tag-expr = { version = "0.1.0-beta.2",  features = ["sqlx"] }
 async-trait = "0.1.89"
 derive_more = { version = "2.0.1", features = ["into_iterator", "index"] }
 log = "0.4.25"

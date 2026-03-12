@@ -682,9 +682,9 @@ dependencies = [
 
 [[package]]
 name = "bool-tag-expr"
-version = "0.1.0-beta.1"
+version = "0.1.0-beta.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "534ba13048c9a763e4ac30e27242fcd466039e370d6aa60309828a9a4968e083"
+checksum = "ab87d97bba1b897cf26a161788b918c8d806a4479ae0683446e2978976246e66"
 dependencies = [
  "derive_more",
  "rand 0.8.5",
