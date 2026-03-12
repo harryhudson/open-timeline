@@ -32,19 +32,19 @@ impl Colours {
     pub fn tag_colours() -> Self {
         let mut colours = Self(Vec::new());
         colours.add(
-            Tag::from(None, TagValue::from(&"person").unwrap()),
+            Tag::from(None, TagValue::from("person").unwrap()),
             Colour::from_any_string("person"),
         );
         colours.add(
-            Tag::from(None, TagValue::from(&"battle").unwrap()),
+            Tag::from(None, TagValue::from("battle").unwrap()),
             Colour::from_hex("#ff0000").unwrap(),
         );
         colours.add(
-            Tag::from(None, TagValue::from(&"book").unwrap()),
+            Tag::from(None, TagValue::from("book").unwrap()),
             Colour::from_hex("#aa3034").unwrap(),
         );
         colours.add(
-            Tag::from(None, TagValue::from(&"novel").unwrap()),
+            Tag::from(None, TagValue::from("novel").unwrap()),
             Colour::from_any_string("novel"),
         );
         colours

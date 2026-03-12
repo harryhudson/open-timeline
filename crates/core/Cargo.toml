@@ -15,7 +15,7 @@ wasm = []
 [dependencies]
 open-timeline-macros = { workspace = true }
 
-bool-tag-expr = { version = "0.1.0-beta.1" }
+bool-tag-expr = { version = "0.1.0-beta.2" }
 derive_more = { version = "2.0.1", features = ["display", "index"] }
 log = "0.4.25"
 rand = "0.8.5"

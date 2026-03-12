@@ -10,7 +10,7 @@ homepage = "https://github.com/harryhudson/open-timeline"
 [dependencies]
 open-timeline-core = { workspace = true }
 
-bool-tag-expr = { version = "0.1.0-beta.1" }
+bool-tag-expr = { version = "0.1.0-beta.2" }
 log = "0.4.25"
 thiserror = "2.0.11"
 rand = "0.8.5"

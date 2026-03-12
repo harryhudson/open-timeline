@@ -5,7 +5,7 @@
 //!
 
 use crate::{Date, Day, HasIdAndName, Month, Name, OpenTimelineId, Year};
-use bool_tag_expr::{BoolTagExpr, Node, Tag, Tags};
+use bool_tag_expr::{BoolTagExpr, Tag, Tags};
 use serde::{Deserialize, Deserializer, Serialize};
 use std::cmp::Ordering;
 use thiserror::Error;
@@ -196,21 +196,7 @@ impl Entity {
         let Some(tags) = self.tags() else {
             return false;
         };
-
-        // TODO: move into bool-tag-expr crate
-        /// Evaluate a `BooleanTagExpr` tree against a list of `Tags`
-        fn evaluate_in_one(expr: Node, tags: &Tags) -> bool {
-            match expr {
-                Node::And(l, r) => evaluate_in_one(*l, tags) && evaluate_in_one(*r, tags),
-                Node::Or(l, r) => evaluate_in_one(*l, tags) || evaluate_in_one(*r, tags),
-                Node::Not(e) => !evaluate_in_one(*e, tags),
-                Node::Tag(tag) => tags.contains(&tag),
-                Node::Bool(_) => panic!(),
-            }
-        }
-
-        // TODO: add a .as_node()/.node() method to bool-tag-expr crate so no cloning
-        evaluate_in_one(bool_tag_expr.clone().into_node(), tags)
+        bool_tag_expr.matches(tags)
     }
 }
 
@@ -496,7 +482,7 @@ mod test {
         let bool_tag_expr = BoolTagExpr::from("a")?;
 
         // Add tag to entity
-        let tags = Tags::from([Tag::from(None, TagValue::from(&"a")?)]);
+        let tags = Tags::from([Tag::from(None, TagValue::from("a")?)]);
         let mut entity_a = valid_entity();
         entity_a.tags = Some(tags);
 
@@ -511,7 +497,7 @@ mod test {
         let bool_tag_expr = BoolTagExpr::from("a & b")?;
 
         // Add only 1 tag to the entity
-        let tags = Tags::from([Tag::from(None, TagValue::from(&"a")?)]);
+        let tags = Tags::from([Tag::from(None, TagValue::from("a")?)]);
         let mut entity_a = valid_entity();
         entity_a.tags = Some(tags);
 
@@ -522,7 +508,7 @@ mod test {
         entity_a
             .tags
             .get_or_insert_with(BTreeSet::new)
-            .insert(Tag::from(None, TagValue::from(&"b")?));
+            .insert(Tag::from(None, TagValue::from("b")?));
 
         // Should match
         assert!(entity_a.matches_bool_tag_expr(&bool_tag_expr));
@@ -535,7 +521,7 @@ mod test {
         let bool_tag_expr = BoolTagExpr::from("a & !b")?;
 
         // Add only 1 tag to the entity
-        let tags = Tags::from([Tag::from(None, TagValue::from(&"a")?)]);
+        let tags = Tags::from([Tag::from(None, TagValue::from("a")?)]);
         let mut entity_a = valid_entity();
         entity_a.tags = Some(tags);
 
@@ -546,7 +532,7 @@ mod test {
         entity_a
             .tags
             .get_or_insert_with(BTreeSet::new)
-            .insert(Tag::from(None, TagValue::from(&"b")?));
+            .insert(Tag::from(None, TagValue::from("b")?));
 
         // Shouldn't match
         assert!(!entity_a.matches_bool_tag_expr(&bool_tag_expr));
@@ -559,27 +545,27 @@ mod test {
         let bool_tag_expr = BoolTagExpr::from("(a | b & c) & !(d & e)")?;
 
         // Add only tag `a` to the entity (should match)
-        let tags = Tags::from([Tag::from(None, TagValue::from(&"a")?)]);
+        let tags = Tags::from([Tag::from(None, TagValue::from("a")?)]);
         let mut entity_a = valid_entity();
         entity_a.tags = Some(tags);
         assert!(entity_a.matches_bool_tag_expr(&bool_tag_expr));
 
         // Add only tag `a` to the entity (shouldn't match)
         let tags = Tags::from([
-            Tag::from(None, TagValue::from(&"a")?),
-            Tag::from(None, TagValue::from(&"d")?),
-            Tag::from(None, TagValue::from(&"e")?),
+            Tag::from(None, TagValue::from("a")?),
+            Tag::from(None, TagValue::from("d")?),
+            Tag::from(None, TagValue::from("e")?),
         ]);
         entity_a.tags = Some(tags);
         assert!(!entity_a.matches_bool_tag_expr(&bool_tag_expr));
 
         // Add only tag `a` to the entity (shouldn't match)
         let tags = Tags::from([
-            Tag::from(None, TagValue::from(&"a")?),
-            Tag::from(None, TagValue::from(&"b")?),
-            Tag::from(None, TagValue::from(&"c")?),
-            Tag::from(None, TagValue::from(&"d")?),
-            Tag::from(None, TagValue::from(&"superfluous")?),
+            Tag::from(None, TagValue::from("a")?),
+            Tag::from(None, TagValue::from("b")?),
+            Tag::from(None, TagValue::from("c")?),
+            Tag::from(None, TagValue::from("d")?),
+            Tag::from(None, TagValue::from("superfluous")?),
         ]);
         entity_a.tags = Some(tags);
         assert!(entity_a.matches_bool_tag_expr(&bool_tag_expr));

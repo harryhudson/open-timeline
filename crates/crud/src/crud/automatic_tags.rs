@@ -114,7 +114,7 @@ mod test {
     #[test]
     fn mapping() {
         // Create tags for an entity
-        let tags = Tags::from([Tag::from(None, TagValue::from(&"king").unwrap())]);
+        let tags = Tags::from([Tag::from(None, TagValue::from("king").unwrap())]);
 
         // Get the tag mappings
         let tag_mappings = AutomticTag::default();
@@ -129,6 +129,6 @@ mod test {
         assert_eq!(2, new_tags.len());
 
         // Check the new tags collection has the tag "person"
-        assert!(new_tags.contains(&Tag::from(None, TagValue::from(&"person").unwrap())));
+        assert!(new_tags.contains(&Tag::from(None, TagValue::from("person").unwrap())));
     }
 }
