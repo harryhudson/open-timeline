@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-License-Identifier: MIT
 
 //!
 //! Everything needed to handle 1 boolean expression
@@ -9,7 +9,7 @@ use crate::{
     ValidAsynchronous, ValidSynchronous, ValiditySynchronous, ValitityStatus, body_text_height,
     widget_x_spacing,
 };
-use bool_tag_expr::BoolTagExpr;
+use bool_tag_expr::{BoolTagExpr, ParseError};
 use eframe::egui::{Context, TextEdit, Ui};
 
 /// What hint text to show
@@ -91,6 +91,14 @@ impl BooleanExpressionGui {
     }
 }
 
+impl TryInto<BoolTagExpr> for &BooleanExpressionGui {
+    type Error = ParseError;
+
+    fn try_into(self) -> Result<BoolTagExpr, Self::Error> {
+        BoolTagExpr::from(self.expr())
+    }
+}
+
 impl ErrorStyle for BooleanExpressionGui {}
 
 impl ValidSynchronous for BooleanExpressionGui {
@@ -168,13 +176,11 @@ impl Draw for BooleanExpressionGui {
             self.changed = input_box.changed();
 
             // Update validity
-            {
-                if input_box.lost_focus() {
-                    self.update_validity();
-                };
-                if input_box.changed() {
-                    self.update_validity();
-                }
+            if input_box.lost_focus() {
+                self.update_validity();
+            };
+            if input_box.changed() {
+                self.update_validity();
             }
         });
     }

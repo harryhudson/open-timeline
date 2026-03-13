@@ -14,6 +14,8 @@ mod label;
 mod paginator;
 mod shortcuts;
 mod status;
+mod tag;
+mod tags;
 mod window;
 
 pub use bool_expr::*;
@@ -26,4 +28,6 @@ pub use label::*;
 pub use paginator::*;
 pub use shortcuts::*;
 pub use status::*;
+pub use tag::*;
+pub use tags::*;
 pub use window::*;

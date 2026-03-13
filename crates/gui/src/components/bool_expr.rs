@@ -10,6 +10,6 @@ use open_timeline_gui_core::BooleanExpressionGui;
 
 impl ToOpenTimelineType<BoolTagExpr> for BooleanExpressionGui {
     fn to_opentimeline_type(&self) -> BoolTagExpr {
-        BoolTagExpr::from(self.expr()).unwrap()
+        self.try_into().unwrap()
     }
 }

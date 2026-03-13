@@ -1,19 +1,16 @@
-// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-License-Identifier: MIT
 
 //!
 //! Everything needed to work with a tag
 //!
 
-use crate::common::ToOpenTimelineType;
-use crate::consts::REMOVE_BUTTON_WIDTH;
+use crate::{
+    Draw, ErrorStyle, REMOVE_BUTTON_WIDTH, ShowRemoveButton, Valid, ValidAsynchronous,
+    ValidSynchronous, ValiditySynchronous, ValitityStatus, body_text_height,
+    keyboard_input_cmd_and_enter, keyboard_input_cmd_and_k, widget_x_spacing,
+};
 use bool_tag_expr::{Tag, TagError, TagName, TagValue};
 use eframe::egui::{Context, TextEdit, Ui};
-use open_timeline_crud::CrudError;
-use open_timeline_gui_core::{
-    Draw, ErrorStyle, ShowRemoveButton, Valid, ValidAsynchronous, ValidSynchronous,
-    ValiditySynchronous, ValitityStatus, body_text_height, keyboard_input_cmd_and_enter,
-    keyboard_input_cmd_and_k, widget_x_spacing,
-};
 
 // TODO: EntityTag and TimelineTag??
 
@@ -59,7 +56,7 @@ pub struct TagGui {
     show_remove_button: ShowRemoveButton,
 
     /// Everything needed for validation.
-    validity: ValitityStatus<(), CrudError>,
+    validity: ValitityStatus<(), ()>,
 }
 
 impl TagGui {
@@ -107,6 +104,20 @@ impl TagGui {
     }
 }
 
+impl TryInto<Tag> for &TagGui {
+    type Error = TagError;
+
+    fn try_into(self) -> Result<Tag, Self::Error> {
+        let tag_name = if !self.name.trim().is_empty() {
+            Some(TagName::from(&self.name)?)
+        } else {
+            None
+        };
+        let tag_value = TagValue::from(&self.value)?;
+        Ok(Tag::from(tag_name, tag_value))
+    }
+}
+
 impl ValidSynchronous for TagGui {
     fn is_valid_synchronous(&self) -> bool {
         self.validity.synchronous() == ValiditySynchronous::Valid
@@ -146,7 +157,7 @@ impl ValidSynchronous for TagGui {
 }
 
 impl ValidAsynchronous for TagGui {
-    type Error = CrudError;
+    type Error = String;
 
     fn check_for_asynchronous_validity_response(&mut self) {
         //
@@ -164,15 +175,6 @@ impl ValidAsynchronous for TagGui {
 impl Valid for TagGui {}
 
 impl ErrorStyle for TagGui {}
-
-impl ToOpenTimelineType<Tag> for TagGui {
-    // TODO: reuse validation
-    fn to_opentimeline_type(&self) -> Tag {
-        let tag_name = (!self.name.trim().is_empty()).then(|| TagName::from(&self.name).unwrap());
-        let tag_value = TagValue::from(&self.value).unwrap();
-        Tag::from(tag_name, tag_value)
-    }
-}
 
 impl Draw for TagGui {
     fn draw(&mut self, ctx: &Context, ui: &mut Ui) {
@@ -224,7 +226,7 @@ impl Draw for TagGui {
             // TODO: fix the width as REMOVE_BUTTON_WIDTH
             // "Remove" button
             if self.show_remove_button == ShowRemoveButton::Yes
-                && open_timeline_gui_core::Button::remove(ui).clicked()
+                && crate::Button::remove(ui).clicked()
             {
                 self.requested_action = Some(RequestedAction::Remove);
             }

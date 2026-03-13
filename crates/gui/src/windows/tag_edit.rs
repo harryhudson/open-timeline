@@ -8,7 +8,6 @@
 
 use crate::app::ActionRequest;
 use crate::common::*;
-use crate::components::TagGui;
 use crate::config::SharedConfig;
 use crate::consts::DEFAULT_WINDOW_SIZES;
 use crate::shortcuts::global_shortcuts;
@@ -17,7 +16,7 @@ use bool_tag_expr::Tag;
 use eframe::egui::{self, CentralPanel, Context, Response, Ui, Vec2, ViewportId};
 use open_timeline_crud::{CrudError, delete_all_matching_tags, update_all_matching_entity_tags};
 use open_timeline_gui_core::{
-    BreakOutWindow, CheckForUpdates, DisplayStatus, Draw, GuiStatus, Reload, Valid,
+    BreakOutWindow, CheckForUpdates, DisplayStatus, Draw, GuiStatus, Reload, TagGui, Valid,
     ValidityAsynchronous, window_has_focus,
 };
 use open_timeline_gui_core::{Shortcut, ShowRemoveButton};
