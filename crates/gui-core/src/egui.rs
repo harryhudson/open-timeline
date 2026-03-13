@@ -4,6 +4,7 @@
 //! `egui` parts
 //!
 
+mod bool_expr;
 mod button;
 mod consts;
 mod draw;
@@ -15,6 +16,7 @@ mod shortcuts;
 mod status;
 mod window;
 
+pub use bool_expr::*;
 pub use button::*;
 pub use consts::*;
 pub use draw::*;

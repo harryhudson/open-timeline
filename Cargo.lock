@@ -3340,6 +3340,7 @@ dependencies = [
 name = "open-timeline-gui-core"
 version = "0.1.2"
 dependencies = [
+ "bool-tag-expr",
  "eframe",
  "log",
  "tokio",

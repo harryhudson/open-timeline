@@ -5,7 +5,6 @@
 //!
 
 use crate::app::ActionRequest;
-use crate::components::{BooleanExpressionGui, HintText};
 use crate::config::SharedConfig;
 use crate::consts::DEFAULT_WINDOW_SIZES;
 use crate::shortcuts::global_shortcuts;
@@ -18,9 +17,11 @@ use eframe::egui::{
 use open_timeline_core::{Date, MAX_YEAR, MIN_YEAR, Name, OpenTimelineId, TimelineView};
 use open_timeline_crud::{CrudError, FetchById};
 use open_timeline_gui_core::{
+    BooleanExpressionGui, EmptyConsideredInvalid, HintText, Shortcut, ShowRemoveButton,
+};
+use open_timeline_gui_core::{
     BreakOutWindow, CheckForUpdates, Draw, Reload, body_text_height, font_size, window_has_focus,
 };
-use open_timeline_gui_core::{EmptyConsideredInvalid, Shortcut, ShowRemoveButton};
 use open_timeline_renderer::frontends::desktop_egui::OpenTimelineRendererEgui;
 use open_timeline_renderer::{MAX_DATETIME_SCALE, MIN_DATETIME_SCALE, TimelineInteractionEvent};
 use std::sync::Arc;

@@ -6,7 +6,6 @@
 
 use crate::app::{ActionRequest, EntityOrTimelineActionRequest};
 use crate::components::OpenTimelineButton;
-use crate::components::{BooleanExpressionGui, HintText};
 use crate::config::SharedConfig;
 use crate::consts::{EDIT_BUTTON_WIDTH, VIEW_BUTTON_WIDTH};
 use crate::spawn_transaction_no_commit_send_result;
@@ -19,8 +18,8 @@ use open_timeline_core::{
 };
 use open_timeline_crud::{CrudError, FetchByPartialNameAndBoolTagExpr, Limit};
 use open_timeline_gui_core::{
-    CheckForUpdates, Draw, EmptyConsideredInvalid, Reload, ShowRemoveButton, body_text_height,
-    widget_x_spacing,
+    BooleanExpressionGui, CheckForUpdates, Draw, EmptyConsideredInvalid, HintText, Reload,
+    ShowRemoveButton, body_text_height, widget_x_spacing,
 };
 use std::sync::Arc;
 use std::u32;
