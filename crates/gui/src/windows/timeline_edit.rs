@@ -6,8 +6,7 @@
 
 use crate::app::ActionRequest;
 use crate::components::{
-    BooleanExpressionGui, EntityOrTimeline, HintText, NameGui, TagsGui, TimelineEntitiesGui,
-    TimelineSubtimelinesGui,
+    EntityOrTimeline, NameGui, TagsGui, TimelineEntitiesGui, TimelineSubtimelinesGui,
 };
 use crate::config::SharedConfig;
 use crate::consts::DEFAULT_WINDOW_SIZES;
@@ -23,9 +22,9 @@ use eframe::egui::{
 use open_timeline_core::{HasIdAndName, OpenTimelineId, TimelineEdit};
 use open_timeline_crud::{CrudError, FetchById};
 use open_timeline_gui_core::{
-    BreakOutWindow, CheckForUpdates, CreateOrEdit, DisplayStatus, Draw, EmptyConsideredInvalid,
-    GuiStatus, Reload, Shortcut, ShowRemoveButton, Valid, ValidSynchronous, ValidityAsynchronous,
-    ValiditySynchronous, window_has_focus,
+    BooleanExpressionGui, BreakOutWindow, CheckForUpdates, CreateOrEdit, DisplayStatus, Draw,
+    EmptyConsideredInvalid, GuiStatus, HintText, Reload, Shortcut, ShowRemoveButton, Valid,
+    ValidSynchronous, ValidityAsynchronous, ValiditySynchronous, window_has_focus,
 };
 use std::sync::Arc;
 use std::time::Instant;

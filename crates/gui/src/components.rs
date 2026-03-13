@@ -15,7 +15,6 @@ mod tags;
 mod timeline_entities;
 mod timeline_entity;
 
-pub use bool_expr::*;
 pub use common::*;
 pub use dates::*;
 pub use name::*;
