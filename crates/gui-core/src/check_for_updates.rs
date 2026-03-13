@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-License-Identifier: MIT
 
 //!
 //! Checking for updates.  This trait reduces unnecessary rendering and thus
