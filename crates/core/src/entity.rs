@@ -93,19 +93,14 @@ impl Entity {
         true
     }
 
-    /// Get the entity's [`Tags`]
+    /// Borrow the entity's [`Tags`]
     pub fn tags(&self) -> &Option<Tags> {
         &self.tags
     }
 
-    /// Set the entity's [`Tags`]
-    pub fn set_tags(&mut self, tags: Tags) {
-        self.tags = (!tags.is_empty()).then_some(tags);
-    }
-
-    /// Clear the entity's [`Tags`] and set to `None`
-    pub fn clear_tags(&mut self) {
-        self.tags = None;
+    /// Mutably borrow the entity's [`Tags`]
+    pub fn tags_mut(&mut self) -> &mut Option<Tags> {
+        &mut self.tags
     }
 
     /// Add a tag to the entity
@@ -121,6 +116,16 @@ impl Entity {
                 self.tags = None
             }
         }
+    }
+
+    /// Set the entity's [`Tags`]
+    pub fn set_tags(&mut self, tags: Tags) {
+        self.tags = (!tags.is_empty()).then_some(tags);
+    }
+
+    /// Clear the entity's [`Tags`] and set to `None`
+    pub fn clear_tags(&mut self) {
+        self.tags = None;
     }
 
     /// Get the entity's start [`Date`]

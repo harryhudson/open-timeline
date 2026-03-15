@@ -4,6 +4,7 @@
 //! All CRUD functionality for individual [`Entity`]s
 //!
 
+use crate::AutomticTag;
 use crate::crud::common::*;
 use crate::crud::common::{Create, Update};
 use bool_tag_expr::{Tag, TagName, TagValue, Tags};
@@ -64,6 +65,8 @@ impl Create for Entity {
             })?;
         }
 
+        // Run automatic tagging
+        AutomticTag::default().map_entity_tags(self);
         // Tags
         if let Some(tags) = &self.tags() {
             insert_entity_tags(transaction, &self.id().unwrap(), tags).await?;
@@ -240,6 +243,10 @@ impl Update for Entity {
 
         // Tags
         {
+            // Run automatic tagging
+            AutomticTag::default().map_entity_tags(self);
+
+            // Update in database
             delete_entity_tags(transaction, &self.id().unwrap()).await?;
             if let Some(tags) = &self.tags() {
                 insert_entity_tags(transaction, &self.id().unwrap(), tags).await?;

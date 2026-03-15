@@ -5,15 +5,33 @@
 //! X that they should also have tags Y & Z.
 //!
 
+/// Helper macro to map tag values to tag values (string literals)
+macro_rules! value_value {
+    // Usage: `value_value!("from" --> "to");`
+    ($from:literal --> $to:literal) => {
+        helper_value_to_value($from, $to)
+    };
+
+    // Usage: `value_value!("to" <-- "from");`
+    ($to:literal <-- $from:literal) => {
+        helper_value_to_value($from, $to)
+    };
+}
+
+mod entity;
+mod timeline;
+
+use crate::crud::automatic_tags::{entity::default_entity_tags, timeline::default_timeline_tags};
 use bool_tag_expr::{Tag, TagValue, Tags};
+use open_timeline_core::{Entity, TimelineEdit};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-/// Represent choice of entity or timeline
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum EntityOrTimeline {
-    Entity,
-    Timeline,
+/// Whether the tags have be altered or not
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq, Hash)]
+pub enum TagsAltered {
+    Unaltered,
+    Altered,
 }
 
 /// Automatically add tags to entity & timelines using their existing tags. For
@@ -23,33 +41,35 @@ enum EntityOrTimeline {
 pub struct AutomticTag {
     /// Entity tag maps - if an entity has a key tag it will be given the
     /// corresponding value tag
-    entity_tags: HashMap<Tag, Tag>,
+    entity_tags_map: HashMap<Tag, Tag>,
 
     /// Timeline tag maps - if a timeline has a key tag it will be given the
     /// corresponding value tag
-    timeline_tags: HashMap<Tag, Tag>,
+    timeline_tags_map: HashMap<Tag, Tag>,
 }
 
 impl AutomticTag {
     /// Use the entity tag mapping and return the (possible augmented) tags
-    pub fn map_entity_tags(&self, tags: Tags) -> Tags {
-        self.map_tags(tags, EntityOrTimeline::Entity)
+    pub fn map_entity_tags(&self, entity: &mut Entity) -> TagsAltered {
+        if let Some(tags) = entity.tags_mut() {
+            self.map_tags(tags, &self.entity_tags_map)
+        } else {
+            TagsAltered::Unaltered
+        }
     }
 
     /// Use the timeline tag mapping and return the (possible augmented) tags
-    pub fn map_timeline_tags(&self, tags: Tags) -> Tags {
-        self.map_tags(tags, EntityOrTimeline::Timeline)
+    pub fn map_timeline_tags(&self, timeline: &mut TimelineEdit) -> TagsAltered {
+        if let Some(tags) = timeline.tags_mut() {
+            self.map_tags(tags, &self.entity_tags_map)
+        } else {
+            TagsAltered::Unaltered
+        }
     }
 
     /// Helper to apply the mappings
-    fn map_tags(&self, mut tags: Tags, entity_or_timeline: EntityOrTimeline) -> Tags {
-        // Get the correct map
-        let map = match entity_or_timeline {
-            EntityOrTimeline::Entity => &self.entity_tags,
-            EntityOrTimeline::Timeline => &self.timeline_tags,
-        };
-
-        // Begin the loop
+    fn map_tags(&self, tags: &mut Tags, map: &HashMap<Tag, Tag>) -> TagsAltered {
+        let mut tags_altered = TagsAltered::Unaltered;
         loop {
             // Track whether the tags are changed
             let mut tags_changed = false;
@@ -62,6 +82,7 @@ impl AutomticTag {
                 if let Some(new_tag) = map.get(&original) {
                     if tags.insert(new_tag.clone()) {
                         tags_changed = true;
+                        tags_altered = TagsAltered::Altered;
                     }
                 }
             }
@@ -73,20 +94,16 @@ impl AutomticTag {
             }
         }
 
-        // Return the (possibly augmented) tags
-        tags
+        // Return whether the tags have been altered
+        tags_altered
     }
 }
 
 impl Default for AutomticTag {
     fn default() -> Self {
         Self {
-            entity_tags: HashMap::from([
-                helper_value_to_value("scientist", "person"),
-                helper_value_to_value("king", "person"),
-                helper_value_to_value("emperor", "person"),
-            ]),
-            timeline_tags: HashMap::from([]),
+            entity_tags_map: default_entity_tags(),
+            timeline_tags_map: default_timeline_tags(),
         }
     }
 }
@@ -103,32 +120,54 @@ fn helper_value_to_value(existing: &str, new: &str) -> (Tag, Tag) {
 mod test {
     use super::*;
     use bool_tag_expr::Tags;
+    use open_timeline_core::{Date, Name};
 
-    /// Ensure the default tag mappings are valid
-    #[test]
-    fn default_are_valid() {
-        AutomticTag::default();
-    }
-
-    /// Ensure the default tag mappings are valid
+    /// Check the mappings are applied corrected
     #[test]
     fn mapping() {
         // Create tags for an entity
         let tags = Tags::from([Tag::from(None, TagValue::from("king").unwrap())]);
-
-        // Get the tag mappings
-        let tag_mappings = AutomticTag::default();
+        let original_tags = tags.clone();
+        let mut entity = Entity::from(
+            None,
+            Name::from("bob").unwrap(),
+            Date::from(None, None, 1234).unwrap(),
+            None,
+            Some(tags),
+        )
+        .unwrap();
 
         // Run the tag mappings
-        let new_tags = tag_mappings.map_entity_tags(tags.clone());
+        let tags_altered = AutomticTag::default().map_entity_tags(&mut entity);
 
-        // Check the original tags and the new tags do not match
-        assert_ne!(tags, new_tags);
+        // Check the response
+        assert_eq!(tags_altered, TagsAltered::Altered);
 
-        // Check the new tags collection has 2 tags
-        assert_eq!(2, new_tags.len());
+        // Check the original tags and the augmented tags do not match
+        assert_ne!(original_tags, entity.tags().clone().unwrap());
+
+        // Check the new tags collection has more than 2 tags
+        assert!(entity.tags().as_ref().unwrap().len() >= 2);
 
         // Check the new tags collection has the tag "person"
-        assert!(new_tags.contains(&Tag::from(None, TagValue::from("person").unwrap())));
+        assert!(
+            entity
+                .tags()
+                .as_ref()
+                .unwrap()
+                .contains(&Tag::from(None, TagValue::from("person").unwrap()))
+        );
+    }
+
+    /// Check the macro
+    #[test]
+    fn check_macro() {
+        let first = HashMap::from([helper_value_to_value("king", "person")]);
+        let second = HashMap::from([value_value!("person" <-- "king")]);
+        let third = HashMap::from([value_value!("king" --> "person")]);
+
+        // Check the 3 are all equal
+        assert_eq!(first, second);
+        assert_eq!(first, third);
     }
 }
