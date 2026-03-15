@@ -20,7 +20,8 @@ use consts::*;
 use error::*;
 use queries::*;
 
-use axum::Router;
+use axum::{Json, Router, routing::get};
+use serde_json::json;
 use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions};
 use std::{str::FromStr, sync::Arc};
 
@@ -63,6 +64,9 @@ pub async fn prepare_api_router(
 
     // Add URL path prefix
     let api = Router::new().nest("/api/v1", apiv1);
+
+    // Add /health endpoint
+    let api = api.route("/health", get(|| async { Json(json!({ "status": "ok" })) }));
 
     // Return the router
     Ok(api)

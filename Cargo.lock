@@ -3380,7 +3380,7 @@ dependencies = [
 
 [[package]]
 name = "open-timeline-www-api"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "axum",
  "bool-tag-expr",
