@@ -5,8 +5,8 @@
 //!
 
 use crate::{
-    Create, CrudError, DeleteById, DeleteByName, FetchById, FetchByName, IsATimelineType, Update,
-    entity_name_from_id, fetch_timeline_bool_expr_string_by_timeline_id,
+    AutomticTag, Create, CrudError, DeleteById, DeleteByName, FetchById, FetchByName,
+    IsATimelineType, Update, entity_name_from_id, fetch_timeline_bool_expr_string_by_timeline_id,
     fetch_timeline_direct_member_entity_ids_by_timeline_id,
     fetch_timeline_direct_subtimeline_ids_by_timeline_id, fetch_timeline_tags,
     is_timeline_id_in_db, timeline_id_from_name, timeline_name_from_id,
@@ -59,6 +59,9 @@ impl Create for TimelineEdit {
             let subtimeline_ids: BTreeSet<OpenTimelineId> = subtimelines.ids();
             insert_timeline_subtimelines(transaction, &self.id().unwrap(), subtimeline_ids).await?;
         }
+
+        // Run automatic tagging
+        AutomticTag::default().map_timeline_tags(self);
 
         // Save tags
         if let Some(tags) = self.tags() {
@@ -212,6 +215,9 @@ impl Update for TimelineEdit {
 
         // Tags
         {
+            // Run automatic tagging
+            AutomticTag::default().map_timeline_tags(self);
+
             // Delete
             delete_timeline_tags(transaction, &timeline_id).await?;
 
