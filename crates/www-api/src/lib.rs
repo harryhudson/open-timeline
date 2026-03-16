@@ -10,20 +10,24 @@
 //! to OpenTimeline to be merged in.
 //!
 
+mod client;
 mod consts;
 mod error;
 mod handlers;
 mod helpers;
 mod queries;
 
+pub use client::*;
+
 use consts::*;
 use error::*;
+use log::info;
 use queries::*;
 
 use axum::{Json, Router, routing::get};
 use serde_json::json;
-use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions};
-use std::{str::FromStr, sync::Arc};
+use sqlx::{Pool, Sqlite};
+use std::sync::Arc;
 
 /// API access mode (read-only or read-write)
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -39,23 +43,47 @@ pub enum ApiMode {
     Dynamic,
 }
 
+// TODO: check pool is read-only if access mode and API mode are?
+/// Helper for using the argue JSON web API
+#[derive(Debug)]
+pub struct OpenTimelineWebApi {}
+
+impl OpenTimelineWebApi {
+    /// Serve the JSON web APIv1
+    pub async fn serve_v1(
+        pool: Pool<Sqlite>,
+        port: u16,
+        access_mode: ApiAccessMode,
+        api_mode: ApiMode,
+    ) -> anyhow::Result<()> {
+        // Get the router
+        let api_router = prepare_api_router(pool, access_mode, api_mode)
+            .await
+            .unwrap();
+
+        // Specify the IP addr and port number
+        let addr = format!("0.0.0.0:{port}");
+
+        // Bind the listener for new connections
+        let listener = tokio::net::TcpListener::bind(&addr).await?;
+
+        // Print the address
+        info!("http://{addr}");
+
+        // Serve the server
+        axum::serve(listener, api_router).await?;
+
+        // Won't actually get here if the server is running
+        Ok(())
+    }
+}
+
 /// Set up and serve the API
-pub async fn prepare_api_router(
-    db_url: &str,
+async fn prepare_api_router(
+    pool: Pool<Sqlite>,
     access_mode: ApiAccessMode,
     api_mode: ApiMode,
-) -> Result<Router, sqlx::Error> {
-    // TODO: test the read-only aspect?
-    // Create connection options (whether the database is read-only or not)
-    let connect_options =
-        SqliteConnectOptions::from_str(db_url)?.read_only(access_mode == ApiAccessMode::Read);
-
-    // Create a pool with those options
-    let pool = SqlitePoolOptions::new()
-        .max_connections(5)
-        .connect_with(connect_options)
-        .await?;
-
+) -> anyhow::Result<Router> {
     // Get the router
     let apiv1 = handlers::router(access_mode, api_mode)?;
 

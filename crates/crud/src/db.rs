@@ -16,6 +16,8 @@ mod merge;
 use backup::*;
 use fetch::*;
 use merge::*;
+use sqlx::Pool;
+use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions};
 
 use crate::crud::CrudError;
 use log::info;
@@ -24,6 +26,7 @@ use sqlx::{Sqlite, SqlitePool, Transaction, migrate::MigrateDatabase};
 use std::fs::File;
 use std::io::{BufReader, Write};
 use std::path::{Path, PathBuf};
+use std::str::FromStr;
 use thiserror::Error;
 
 /// The OpenTimeline database
@@ -59,7 +62,7 @@ impl OpenTimelineDatabase {
         let pool = SqlitePool::connect(&db_url).await?;
 
         // Run migrations (uses compile-time embedding of migrations)
-        sqlx::migrate!("./migrations").run(&pool).await?;
+        Self::migrate_pool(&pool).await?;
 
         info!(
             "Migrations applied successfully to {}",
@@ -67,6 +70,27 @@ impl OpenTimelineDatabase {
         );
 
         Ok(())
+    }
+
+    // TODO: test the read-only aspect?
+    ///
+    pub async fn sqlite_pool_from_url(
+        db_url: &str,
+        read_only: bool,
+    ) -> Result<Pool<Sqlite>, sqlx::Error> {
+        // Create connection options (whether the database is read-only or not)
+        let connect_options = SqliteConnectOptions::from_str(db_url)?.read_only(read_only);
+
+        // Create a pool with those options
+        SqlitePoolOptions::new()
+            .max_connections(5)
+            .connect_with(connect_options)
+            .await
+    }
+
+    /// Run migrations (uses compile-time embedding of migrations)
+    pub async fn migrate_pool(pool: &Pool<Sqlite>) -> Result<(), sqlx::Error> {
+        Ok(sqlx::migrate!("./migrations").run(pool).await?)
     }
 
     /// Clear the database

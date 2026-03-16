@@ -220,6 +220,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "anyhow"
+version = "1.0.102"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7f202df86484c868dbad7eaa557ef785d5c66295e41b460ef922eca0723b842c"
+
+[[package]]
 name = "arboard"
 version = "3.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3382,13 +3388,17 @@ dependencies = [
 name = "open-timeline-www-api"
 version = "0.1.2"
 dependencies = [
+ "anyhow",
  "axum",
  "bool-tag-expr",
  "log",
  "open-timeline-core",
  "open-timeline-crud",
+ "portpicker",
+ "reqwest",
  "serde",
  "serde_json",
+ "simplelog",
  "sqlx",
  "thiserror 2.0.18",
  "tokio",
@@ -3662,6 +3672,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7a9db96d7fa8782dd8c15ce32ffe8680bbd1e978a43bf51a34d39483540495f5"
 dependencies = [
  "portable-atomic",
+]
+
+[[package]]
+name = "portpicker"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "be97d76faf1bfab666e1375477b23fde79eccf0276e9b63b92a39d676a889ba9"
+dependencies = [
+ "rand 0.8.5",
 ]
 
 [[package]]
