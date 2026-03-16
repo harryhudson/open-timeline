@@ -4,10 +4,10 @@
 //! Web API for fetching more than 1 entity at a time
 //!
 
-use crate::helpers::ErrorMsg;
-use crate::{
-    ApiError, DEFAULT_LIMIT_RANDOM_ENTITIES, MAX_LIMIT_RANDOM_ENTITIES, PartialNameQueryParams,
-};
+use crate::v1::consts::{DEFAULT_LIMIT_RANDOM_ENTITIES, MAX_LIMIT_RANDOM_ENTITIES};
+use crate::v1::error::ApiError;
+use crate::v1::server::helpers::ErrorMsg;
+use crate::v1::server::queries::PartialNameQueryParams;
 use axum::Json;
 use axum::extract::{Query, State};
 use axum::http::StatusCode;

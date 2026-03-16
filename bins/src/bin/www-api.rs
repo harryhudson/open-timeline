@@ -6,7 +6,7 @@
 
 use clap::{CommandFactory, Parser};
 use open_timeline_crud::OpenTimelineDatabase;
-use open_timeline_www_api::{ApiAccessMode, ApiMode, OpenTimelineWebApi};
+use open_timeline_www_api::v1::{ApiAccessMode, ApiMode, OpenTimelineWebApi};
 use std::path::PathBuf;
 
 #[macro_use]
@@ -65,7 +65,7 @@ async fn serve(db_url: &str, read_only: bool, dynamic: bool) {
     let port = 2408;
 
     // Serve the API
-    OpenTimelineWebApi::serve_v1(pool, port, access_mode, api_mode)
+    OpenTimelineWebApi::serve(pool, port, access_mode, api_mode)
         .await
         .unwrap()
 }

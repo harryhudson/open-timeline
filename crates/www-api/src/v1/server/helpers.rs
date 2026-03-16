@@ -4,7 +4,7 @@
 //! Generic helpers
 //!
 
-use crate::ApiError;
+use crate::v1::error::ApiError;
 use axum::{Json, http::StatusCode};
 use open_timeline_core::{HasIdAndName, OpenTimelineId};
 use open_timeline_crud::{

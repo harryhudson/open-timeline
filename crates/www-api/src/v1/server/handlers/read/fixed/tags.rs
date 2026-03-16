@@ -4,7 +4,7 @@
 //! Web API for getting more than 1 tag at a time
 //!
 
-use crate::ApiError;
+use crate::v1::error::ApiError;
 use axum::{Json, extract::State};
 use bool_tag_expr::Tags;
 use open_timeline_crud::FetchAll;

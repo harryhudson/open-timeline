@@ -4,8 +4,10 @@
 //! Web API for fetching more than 1 timeline at a time
 //!
 
-use crate::{ApiError, PartialNameQueryParams, helpers::ErrorMsg};
-use crate::{DEFAULT_LIMIT_RANDOM_TIMELINES, MAX_LIMIT_RANDOM_TIMELINES};
+use crate::v1::consts::{DEFAULT_LIMIT_RANDOM_TIMELINES, MAX_LIMIT_RANDOM_TIMELINES};
+use crate::v1::error::ApiError;
+use crate::v1::server::helpers::ErrorMsg;
+use crate::v1::server::queries::PartialNameQueryParams;
 use axum::Json;
 use axum::extract::Query;
 use axum::{extract::State, http::StatusCode};

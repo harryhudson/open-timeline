@@ -4,7 +4,7 @@
 //! All query parameter structs
 //!
 
-use crate::DEFAULT_LIMIT_PARTIAL_NAME_QUERY;
+use crate::v1::consts::DEFAULT_LIMIT_PARTIAL_NAME_QUERY;
 use open_timeline_crud::Limit;
 use serde::Deserialize;
 

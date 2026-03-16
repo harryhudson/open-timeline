@@ -7,10 +7,8 @@
 pub mod entity;
 pub mod timeline;
 
-use axum::{
-    Router,
-    routing::{patch, put},
-};
+use axum::Router;
+use axum::routing::{patch, put};
 pub use entity::*;
 use sqlx::{Pool, Sqlite};
 use std::sync::Arc;

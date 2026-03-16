@@ -4,7 +4,7 @@
 //! All handlers
 //!
 
-use crate::{ApiAccessMode, ApiMode};
+use crate::v1::{ApiAccessMode, ApiMode};
 use axum::Router;
 use sqlx::{Pool, Sqlite};
 use std::sync::Arc;

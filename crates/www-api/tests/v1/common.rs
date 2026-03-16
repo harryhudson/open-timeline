@@ -5,9 +5,7 @@
 use log::LevelFilter;
 use log::info;
 use open_timeline_crud::OpenTimelineDatabase;
-use open_timeline_www_api::ApiAccessMode;
-use open_timeline_www_api::ApiMode;
-use open_timeline_www_api::OpenTimelineWebApi;
+use open_timeline_www_api::v1::{ApiAccessMode, ApiMode, OpenTimelineWebApi};
 use simplelog::{ColorChoice, CombinedLogger, ConfigBuilder, TermLogger, TerminalMode};
 use sqlx::{Pool, Sqlite};
 use std::time::Duration;
