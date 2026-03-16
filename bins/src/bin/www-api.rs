@@ -5,7 +5,8 @@
 //!
 
 use clap::{CommandFactory, Parser};
-use open_timeline_www_api::{ApiAccessMode, ApiMode, prepare_api_router};
+use open_timeline_crud::OpenTimelineDatabase;
+use open_timeline_www_api::{ApiAccessMode, ApiMode, OpenTimelineWebApi};
 use std::path::PathBuf;
 
 #[macro_use]
@@ -42,6 +43,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 /// Serve the website and API
 async fn serve(db_url: &str, read_only: bool, dynamic: bool) {
+    // Create database pool
+    let pool = OpenTimelineDatabase::sqlite_pool_from_url(db_url, read_only)
+        .await
+        .unwrap();
+
     // Setup up the API modes
     let access_mode = if read_only {
         ApiAccessMode::Read
@@ -54,22 +60,14 @@ async fn serve(db_url: &str, read_only: bool, dynamic: bool) {
         ApiMode::Static
     };
 
-    // Get the router
-    let api_router = prepare_api_router(db_url, access_mode, api_mode)
+    // TODO: allow the port number to be passed in as arg
+    // Fix the port number
+    let port = 2408;
+
+    // Serve the API
+    OpenTimelineWebApi::serve_v1(pool, port, access_mode, api_mode)
         .await
-        .unwrap();
-
-    // Specify the IP addr and port number
-    let addr = "0.0.0.0:2408";
-
-    // Bind the listener for new connections
-    let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
-
-    // Print the address
-    info!("http://{addr}");
-
-    // Serve the server
-    axum::serve(listener, api_router).await.unwrap();
+        .unwrap()
 }
 
 /// OpenTimeline CLI args using [clap]

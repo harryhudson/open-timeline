@@ -9,8 +9,8 @@ use axum::Router;
 use sqlx::{Pool, Sqlite};
 use std::sync::Arc;
 
-pub mod get;
-pub mod non_get;
+pub mod read;
+pub mod write;
 
 /// Set up and serve the API
 pub fn router(
@@ -18,12 +18,12 @@ pub fn router(
     api_mode: ApiMode,
 ) -> Result<Router<Arc<Pool<Sqlite>>>, sqlx::Error> {
     // GET request routes for API v1
-    let router = get::router(api_mode)?;
+    let router = read::router(api_mode)?;
 
     // Non-GET request routes for API v1
     let router = match access_mode {
         ApiAccessMode::Read => router,
-        ApiAccessMode::ReadWrite => router.merge(non_get::router()?),
+        ApiAccessMode::ReadWrite => router.merge(write::router()?),
     };
 
     Ok(router)
