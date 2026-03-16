@@ -4,7 +4,8 @@
 //! Web API for a single entity
 //!
 
-use crate::{ApiError, helpers::*};
+use crate::v1::error::ApiError;
+use crate::v1::server::helpers::entity_id_from_id_or_name;
 use axum::Json;
 use axum::extract::{Path, State};
 use open_timeline_core::{Entity, ReducedTimelines};

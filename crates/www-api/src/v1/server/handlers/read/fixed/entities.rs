@@ -4,7 +4,7 @@
 //! Static Web API for fetching more than 1 entity at a time
 //!
 
-use crate::ApiError;
+use crate::v1::error::ApiError;
 use axum::Json;
 use axum::extract::State;
 use open_timeline_core::{Entity, IsReducedType, ReducedEntities};

@@ -4,7 +4,7 @@
 //! All GET requests
 //!
 
-use crate::ApiMode;
+use crate::v1::ApiMode;
 use axum::{Router, routing::get};
 use sqlx::{Pool, Sqlite};
 use std::sync::Arc;

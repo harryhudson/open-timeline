@@ -5,7 +5,7 @@
 mod common;
 
 use crate::common::*;
-use open_timeline_www_api::OpenTimelineWebApiClient;
+use open_timeline_www_api::v1::OpenTimelineWebApiClient;
 use reqwest::StatusCode;
 use sqlx::{Pool, Sqlite};
 
