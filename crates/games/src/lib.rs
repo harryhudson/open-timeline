@@ -12,6 +12,9 @@
 //! website.
 //!
 
+mod html;
+mod wasm;
+
 pub mod decades;
 pub mod left_right;
 pub mod order_entities;
@@ -21,18 +24,23 @@ pub mod which_date;
 use open_timeline_core::Date;
 use rand::{Rng, seq::SliceRandom, thread_rng};
 use std::collections::HashSet;
+use wasm_bindgen::prelude::wasm_bindgen;
+
+use crate::html::Html;
 
 /// Indicates answer correctness
+#[wasm_bindgen]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Answer {
-    Correct,
     Incorrect,
+    Correct,
 }
 
 /// Implementing types are games that can be managed externally
 pub trait GameManagement<T> {
     // TODO: can this be derived for all games? I think they're all the same
-    /// Start a new game (i.e. play round 1)
+    /// Start a new game (i.e. play round 1).  Note that this clears the
+    /// entities held
     fn new_game(&mut self);
 
     /// Setup the next round (i.e. play the next round)
@@ -42,7 +50,13 @@ pub trait GameManagement<T> {
     fn check_answer(&mut self, choice: T) -> Result<(), GameError>;
 
     /// Get the game's description
-    fn description(&mut self) -> String;
+    fn description(&self) -> String;
+
+    /// Get the game's stats
+    fn stats(&self) -> Stats;
+
+    /// Get whether the last answer was correct or incorrect (if there was one)
+    fn last_answer(&self) -> Option<Answer>;
 }
 
 /// Possible game management errors
@@ -54,10 +68,17 @@ pub enum GameError {
 }
 
 /// Game stats
+#[wasm_bindgen]
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct Stats {
+    ///
+    #[wasm_bindgen(readonly)]
     pub round: i32,
+    ///
+    #[wasm_bindgen(readonly)]
     pub correct_round_count: i32,
+    ///
+    #[wasm_bindgen(readonly)]
     pub incorrect_round_count: i32,
 }
 
@@ -98,70 +119,6 @@ impl<T> AnswerOption<T> {
             Self::Correct(value) => Html(fn_to_get_str(value)),
             Self::Incorrect(value) => Html(fn_to_get_str(value)),
         }
-    }
-}
-
-/// For HTML creation
-pub struct Html(String);
-
-// TODO: check column counts?
-impl Html {
-    /// Get the underlying `&str`
-    pub fn str(&self) -> &str {
-        &self.0
-    }
-
-    /// Get a single HTML string from a vector of HTML strings
-    pub fn from_vec(html: Vec<Html>) -> Self {
-        Html(
-            html.into_iter()
-                .map(|html| html.0)
-                .collect::<Vec<String>>()
-                .concat(),
-        )
-    }
-
-    /// Begin HTML docs
-    pub fn html_opening_quiz_doc(
-        title: impl ToString,
-        table_column_headings: Vec<impl ToString>,
-    ) -> Self {
-        let title = title.to_string();
-        let table_column_headings: Vec<String> = table_column_headings
-            .into_iter()
-            .map(|heading| heading.to_string())
-            .collect();
-        let mut html = format!(
-            r"
-                <h1>{title}</h1>
-                <table>
-                    <tr>
-                        <th></th>
-                        <th>Question</th>
-                        <th></th>
-                        <th></th>
-                        <th></th>
-                    </tr>
-            "
-        );
-        for heading in table_column_headings {
-            html.push_str(&format!("<th>{heading}</th>"));
-        }
-        html.push_str("</tr>");
-        Html(html)
-    }
-
-    pub fn quiz_table_row(table_column_content: Vec<impl ToString>) -> Self {
-        let mut row = String::from("<tr>");
-        for column in table_column_content {
-            row.push_str(&format!("<td>{}</td>", column.to_string()));
-        }
-        row.push_str("</tr>");
-        Html(row)
-    }
-
-    pub fn quiz_html_doc_finish() -> Self {
-        Html(String::from("</table>"))
     }
 }
 

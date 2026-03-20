@@ -124,6 +124,7 @@ pub fn measure_text_for_engine(font_size: f64, text: String) -> (f64, f64) {
     (measurements.width(), height)
 }
 
+/// Setup WASM logging & console log any panics
 #[wasm_bindgen(start)]
 pub fn start() -> Result<(), JsValue> {
     // TODO: where to put this?

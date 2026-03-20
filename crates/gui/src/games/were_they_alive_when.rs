@@ -6,7 +6,6 @@
 
 use crate::config::SharedConfig;
 use crate::games::{GameState, GameTimelineSearchAndFetch, draw_stats};
-use bool_tag_expr::TagValue;
 use eframe::egui::{self, Align, Context, Layout, TextWrapMode, Ui, Vec2};
 use open_timeline_games::{GameManagement, were_they_alive_when::*};
 use open_timeline_gui_core::{Draw, widget_x_spacing};
@@ -34,7 +33,7 @@ impl WereTheyAliveWhenGameGui {
     }
 
     fn draw_question(&mut self, _ctx: &Context, ui: &mut Ui, enabled: bool) {
-        if let Some(question) = &self.game.current_question {
+        if let Some(question) = self.game.current_question() {
             open_timeline_gui_core::Label::sub_heading(ui, question.str());
 
             let spacing = widget_x_spacing(ui);
@@ -97,7 +96,7 @@ impl Draw for WereTheyAliveWhenGameGui {
 
         // Stats
         if self.state.has_started() {
-            draw_stats(ctx, ui, self.game.stats);
+            draw_stats(ctx, ui, self.game.stats());
             ui.separator();
         }
 
@@ -123,21 +122,8 @@ impl Draw for WereTheyAliveWhenGameGui {
                 if let Some(result) = self.game_timeline_search_and_fetch.timeline.as_ref() {
                     match result {
                         Ok(timeline) => {
-                            let (people, not_people): (Vec<_>, Vec<_>) = timeline
-                                .entities()
-                                .as_deref()
-                                .unwrap_or(&[])
-                                .iter()
-                                .cloned()
-                                .partition(|entity| {
-                                    entity.tags().clone().map_or(false, |tags| {
-                                        tags.iter().any(|tag| {
-                                            tag.value == TagValue::from("person").unwrap()
-                                        })
-                                    })
-                                });
-                            self.game.set_people_entity_pool(people);
-                            self.game.set_not_people_entity_pool(not_people);
+                            self.game
+                                .set_entity_pool(timeline.entities().clone().unwrap_or(Vec::new()));
                             self.state = GameState::WaitingForAnswer;
                             let _ = self.game.setup_next_round();
                         }
@@ -154,7 +140,7 @@ impl Draw for WereTheyAliveWhenGameGui {
             GameState::WaitingForNextRound => {
                 self.draw_question(ctx, ui, false);
                 ui.separator();
-                if let Some(last_answer) = self.game.last_answer.as_ref() {
+                if let Some(last_answer) = self.game.last_answer() {
                     ui.horizontal(|ui| {
                         ui.label("Last Answer");
                         open_timeline_gui_core::Label::strong(ui, &format!("{last_answer:?}"));
