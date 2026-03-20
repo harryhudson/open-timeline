@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+<head>
+	<meta charset="UTF-8">
+	<title>OpenTimeline Order Entities HTML Game Test</title>
+</head>
+<body>
+	<h2>Order Entities HTML Game</h2>
+
+	<label>
+		<input type="radio" name="order-by" start checked>
+		Order by first started
+	</label>
+	<label>
+		<input type="radio" name="order-by" end>
+		Order by first ended
+	</label>
+
+	<p>Description: <span description>None</span></p>
+
+	<div game-time style="display: none;">
+		<p>Stats: Round = <span round>0</span> Correct = <span correct>0</span> Incorrect = <span incorrect>0</span></p>
+
+		<div options>
+			<p>No options yet</p>
+		</div>
+
+		<p>Status: <span status>None</span></p>
+
+		<button type="button" submit>Submit</button>
+		<button type="button" next-round disabled>Next Round</button>
+		<button type="button" end-game style="display: block;" disabled>End Game</button>
+	</div>
+
+	<button type="button" new-game style="display: block;">New Game</button>
+</body>
+</html>
+
+<script type="module">
+	//--------------------------------------------------------------------------
+	// Imports
+	//--------------------------------------------------------------------------
+	import * as helpers from "./../other/helpers.js";
+	import init, * as OpenTimelineGames from "./../../pkg/open_timeline_games.js";
+	await init();
+
+	//--------------------------------------------------------------------------
+	// Get elements
+	//--------------------------------------------------------------------------
+	// Buttons
+	const next_round_button = document.querySelector("button[next-round]")
+	const submit_button = document.querySelector("button[submit]")
+	const new_game_button = document.querySelector("button[new-game]")
+	const end_game_button = document.querySelector("button[end-game]")
+
+	// Game div
+	const game_time_div = document.querySelector("div[game-time]")
+
+	// Question (options)
+	const options_div = document.querySelector("div[options]")
+
+	// Description
+	const description_span = document.querySelector("span[description]")
+
+	// Variants
+	const game_variant_input_start = document.querySelector("input[start]")
+	const game_variant_input_end = document.querySelector("input[end]")
+
+	// Status
+	const status_span = document.querySelector("span[status]")
+
+	// Stats
+	const stats_round_span = document.querySelector("span[round]")
+	const stats_correct_span = document.querySelector("span[correct]")
+	const stats_incorrect_span = document.querySelector("span[incorrect]")
+
+	//--------------------------------------------------------------------------
+	// Setup & run the game
+	//--------------------------------------------------------------------------
+	// Create a new game object
+	let game = new OpenTimelineGames.WasmOrderEntitiesGame();
+	console.log(game);
+
+	// Set description
+	set_description()
+
+	// Retrieve the entities for testing
+	let entities = await helpers.get_entities()
+
+	//--------------------------------------------------------------------------
+	// Event listeners
+	//--------------------------------------------------------------------------
+	next_round_button.addEventListener('click', event => {
+	    console.log("Next round clicked");
+		next_round()
+	});
+
+	submit_button.addEventListener('click', event => {
+	    console.log("Submit clicked");
+
+		// Get answer
+		let entities = []
+		document.querySelectorAll("span[entity]").forEach((span) => {
+			const entity = JSON.parse(span.dataset.open_timeline_entity);
+			entities.push(entity)
+		})
+		console.log("answer", entities);
+		game.check_answer(entities)
+		update_answer()
+	});
+
+	game_variant_input_start.addEventListener("click", event => {
+		console.log("Game variant to start")
+		const variant = OpenTimelineGames.DecadesGameVariant.DecadeOfStart
+		game.set_variant(variant)
+		set_description()
+	})
+
+	game_variant_input_end.addEventListener("click", event => {
+		console.log("Game variant to end")
+		const variant = OpenTimelineGames.DecadesGameVariant.DecadeOfEnd
+		game.set_variant(variant)
+		set_description()
+	})
+
+	new_game_button.addEventListener("click", event => {
+		new_game()
+	})
+
+	end_game_button.addEventListener("click", event => {
+		end_game()
+	})
+
+	//--------------------------------------------------------------------------
+	// Game-specific helpers
+	//--------------------------------------------------------------------------
+	function set_description() {
+		description_span.innerText = game.description()
+	}
+
+	//
+	function new_game() {
+		// Start a new game
+		console.log("New game")
+		game.new_game()
+
+		// Correct stats
+		display_stats()
+
+		// Use the entities to play the game
+		console.log("Setting entity pool (JS)")
+		game.set_entity_pool(entities)
+
+		// Disable buttons
+		game_variant_input_start.disabled = true
+		game_variant_input_end.disabled = true
+		new_game_button.disabled = true
+
+		// Show game
+		game_time_div.style.display = '';
+
+		// Start
+		next_round()
+	}
+
+	//
+	function end_game() {
+		// End game
+		console.log("End game")
+
+		// Enable buttons
+		game_variant_input_start.disabled = false
+		game_variant_input_end.disabled = false
+		new_game_button.disabled = false
+
+		// Disable end game button
+		end_game_button.disabled = true
+
+		// Hide game
+		game_time_div.style.display = 'none';
+	}
+
+	//
+	function display_stats() {
+		const stats = game.stats()
+		helpers.print_stats(stats)
+		stats_round_span.innerText = stats.round
+		stats_correct_span.innerText = stats.correct_round_count
+		stats_incorrect_span.innerText = stats.incorrect_round_count
+	}
+
+	function update_answer() {
+		// Update stats
+		display_stats()
+
+		// Disable the buttons
+		document.querySelectorAll("button[up]").forEach((button) => {
+			button.disabled = true
+		})
+		document.querySelectorAll("button[down]").forEach((button) => {
+			button.disabled = true
+		})
+
+		// Get the last answer & update the status
+		const last_answer = game.last_answer()
+		const last_answer_correct =  helpers.answer_is_correct(last_answer)
+		console.log("Last answer", helpers.answer_is_correct(last_answer))
+		if (last_answer_correct) {
+			status_span.innerText = "Correct"
+		} else {
+			status_span.innerText = "Incorrect"
+		}
+
+		// Update whether buttons enabled
+		next_round_button.disabled = false
+		end_game_button.disabled = false
+		submit_button.disabled = true
+	}
+
+	function next_round() {
+		// Update whether buttons enabled
+		next_round_button.disabled = true
+		end_game_button.disabled = true
+		submit_button.disabled = false
+
+		// Setup the next round
+		console.log("Setup next round")
+		try {
+			game.setup_next_round()
+		} catch (e) {
+			console.log("No next question")
+			console.error(e)
+			return
+		}
+
+		// Get the current question
+		console.log("Current question")
+		let question = game.current_question()
+		console.log(question)
+
+		// Clear current options
+		options_div.replaceChildren();
+
+		// Add new options
+		question.forEach((entity) => {
+			console.log(entity)
+
+			// Create div
+			const div = document.createElement("div");
+
+			// Up button
+			const up_button = document.createElement("button");
+			up_button.type = "button";
+			up_button.textContent = "▲"
+			up_button.setAttribute("up", "");
+
+			// Down button
+			const down_button = document.createElement("button");
+			down_button.type = "button";
+			down_button.textContent = "▼"
+			down_button.setAttribute("down", "");
+
+			// Text
+			const text = document.createElement("span");
+			text.textContent = entity.name;
+			text.dataset.open_timeline_entity = JSON.stringify(entity);
+			text.setAttribute("entity", "");
+
+			// Add event listeners
+			up_button.addEventListener('click', event => {
+				console.log("clicked move up");
+				swap_with_above(event.target.parentElement)
+			});
+			down_button.addEventListener('click', event => {
+				console.log("clicked move down");
+				swap_with_below(event.target.parentElement)
+			});
+
+			// Add buttons & text to div
+			div.appendChild(up_button)
+			div.appendChild(down_button)
+			div.appendChild(text)
+
+			// Attach to the DOM
+			options_div.appendChild(div);
+		})
+
+		// Set status
+		status_span.innerText = "None"
+	}
+
+	function swap_with_below(element) {
+		const next = element.nextElementSibling;
+		if (!next) return;
+
+		const parent = element.parentNode;
+
+		// Move next before current
+		parent.insertBefore(next, element);
+
+		// Move current after next (which is now before it)
+		parent.insertBefore(element, next.nextSibling);
+	}
+
+	function swap_with_above(element) {
+		const previous = element.previousElementSibling;
+		if (!previous) return;
+
+		const parent = element.parentNode;
+
+		// Move current before previous
+		parent.insertBefore(element, previous);
+
+		// Then move previous after current (which is now before it)
+		parent.insertBefore(previous, element.nextSibling);
+	}
+</script>
