@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+<head>
+	<meta charset="UTF-8">
+	<title>OpenTimeline Which Date HTML Game Test</title>
+</head>
+<body>
+	<h2>Which Date HTML Game</h2>
+
+	<label>
+		<input type="radio" name="start-end" start checked>
+		Start date
+	</label>
+	<label>
+		<input type="radio" name="start-end" end>
+		End date
+	</label>
+
+	<label>
+		<input type="radio" name="year-decade" year checked>
+		Year
+	</label>
+	<label>
+		<input type="radio" name="year-decade" decade>
+		Decade
+	</label>
+
+	<p>Description: <span description>None</span></p>
+
+	<div game-time style="display: none;">
+		<p>Stats: Round = <span round>0</span> Correct = <span correct>0</span> Incorrect = <span incorrect>0</span></p>
+
+		<p>Question: <span question>None</span></p>
+		<label>
+			Answer
+			<input answer type="number" min="-50000" max="50000" step="1" value="0">
+		</label>
+
+		<p>Status: <span status>None</span></p>
+
+		<button type="button" submit>Submit</button>
+		<button type="button" next-round disabled>Next Round</button>
+		<button type="button" end-game style="display: block;" disabled>End Game</button>
+	</div>
+
+	<button type="button" new-game style="display: block;">New Game</button>
+</body>
+</html>
+
+<script type="module">
+	//--------------------------------------------------------------------------
+	// Imports
+	//--------------------------------------------------------------------------
+	import * as helpers from "./../other/helpers.js";
+	import init, * as OpenTimelineGames from "./../../pkg/open_timeline_games.js";
+	await init();
+
+	//--------------------------------------------------------------------------
+	// Get elements
+	//--------------------------------------------------------------------------
+	// Buttons
+	const next_round_button = document.querySelector("button[next-round]")
+	const submit_button = document.querySelector("button[submit]")
+	const new_game_button = document.querySelector("button[new-game]")
+	const end_game_button = document.querySelector("button[end-game]")
+
+	// Game div
+	const game_time_div = document.querySelector("div[game-time]")
+
+	// Question
+	const question_span = document.querySelector("span[question]")
+
+	// Answer
+	const answer_input = document.querySelector("input[answer]")
+
+	// Description
+	const description_span = document.querySelector("span[description]")
+
+	// Variants
+	const game_variant_input_start = document.querySelector("input[start]")
+	const game_variant_input_end = document.querySelector("input[end]")
+	const game_variant_input_year = document.querySelector("input[year]")
+	const game_variant_input_decade = document.querySelector("input[decade]")
+
+	// Status
+	const status_span = document.querySelector("span[status]")
+
+	// Stats
+	const stats_round_span = document.querySelector("span[round]")
+	const stats_correct_span = document.querySelector("span[correct]")
+	const stats_incorrect_span = document.querySelector("span[incorrect]")
+
+	//--------------------------------------------------------------------------
+	// Setup & run the game
+	//--------------------------------------------------------------------------
+	// Create a new game object
+	let game = new OpenTimelineGames.WasmWhichDateGame();
+	console.log(game);
+
+	// Set description
+	set_description()
+
+	// Retrieve the entities for testing
+	let entities = await helpers.get_entities()
+
+	//--------------------------------------------------------------------------
+	// Event listeners
+	//--------------------------------------------------------------------------
+	next_round_button.addEventListener('click', event => {
+	    console.log("Next round clicked");
+		next_round()
+	});
+
+	submit_button.addEventListener('click', event => {
+	    console.log("Submit clicked");
+
+		// Get answer
+		const answer = answer_input.value
+		console.log("answer", answer);
+		game.check_answer(answer)
+		update_answer()
+	});
+
+	game_variant_input_start.addEventListener("click", event => {
+		console.log("Game variant to start")
+		const variant = OpenTimelineGames.WhichDateGameVariant.StartDate
+		game.set_variant(variant)
+		set_description()
+	})
+
+	game_variant_input_end.addEventListener("click", event => {
+		console.log("Game variant to end")
+		const variant = OpenTimelineGames.WhichDateGameVariant.EndDate
+		game.set_variant(variant)
+		set_description()
+	})
+
+	game_variant_input_year.addEventListener("click", event => {
+		console.log("Game variant to year")
+		const variant = OpenTimelineGames.YearOrDecade.Year
+		game.set_year_or_decade(variant)
+		set_description()
+	})
+
+	game_variant_input_decade.addEventListener("click", event => {
+		console.log("Game variant to decade")
+		const variant = OpenTimelineGames.YearOrDecade.Decade
+		game.set_year_or_decade(variant)
+		set_description()
+	})
+
+	new_game_button.addEventListener("click", event => {
+		new_game()
+	})
+
+	end_game_button.addEventListener("click", event => {
+		end_game()
+	})
+
+	//--------------------------------------------------------------------------
+	// Game-specific helpers
+	//--------------------------------------------------------------------------
+	function set_description() {
+		description_span.innerText = game.description()
+	}
+
+	//
+	function new_game() {
+		// Start a new game
+		console.log("New game")
+		game.new_game()
+
+		// Correct stats
+		display_stats()
+
+		// Use the entities to play the game
+		console.log("Setting entity pool (JS)")
+		game.set_entity_pool(entities)
+
+		// Disable buttons
+		game_variant_input_start.disabled = true
+		game_variant_input_end.disabled = true
+		game_variant_input_year.disabled = true
+		game_variant_input_decade.disabled = true
+		new_game_button.disabled = true
+
+		// Show game
+		game_time_div.style.display = '';
+
+		// Start
+		next_round()
+	}
+
+	//
+	function end_game() {
+		// End game
+		console.log("End game")
+
+		// Enable buttons
+		game_variant_input_start.disabled = false
+		game_variant_input_end.disabled = false
+		game_variant_input_year.disabled = false
+		game_variant_input_decade.disabled = false
+		new_game_button.disabled = false
+
+		// Disable end game button
+		end_game_button.disabled = true
+
+		// Hide game
+		game_time_div.style.display = 'none';
+	}
+
+	//
+	function display_stats() {
+		const stats = game.stats()
+		helpers.print_stats(stats)
+		stats_round_span.innerText = stats.round
+		stats_correct_span.innerText = stats.correct_round_count
+		stats_incorrect_span.innerText = stats.incorrect_round_count
+	}
+
+	function update_answer() {
+		// Update stats
+		display_stats()
+
+		// Get the last answer & update the status
+		const last_answer = game.last_answer()
+		const last_answer_correct =  helpers.answer_is_correct(last_answer)
+		console.log("Last answer", helpers.answer_is_correct(last_answer))
+		if (last_answer_correct) {
+			status_span.innerText = "Correct"
+		} else {
+			status_span.innerText = "Incorrect"
+		}
+
+		// Update whether buttons enabled
+		next_round_button.disabled = false
+		end_game_button.disabled = false
+		submit_button.disabled = true
+	}
+
+	function next_round() {
+		// Update whether buttons enabled
+		next_round_button.disabled = true
+		end_game_button.disabled = true
+		submit_button.disabled = false
+
+		// Setup the next round
+		console.log("Setup next round")
+		try {
+			game.setup_next_round()
+		} catch (e) {
+			console.log("No next question")
+			console.error(e)
+			return
+		}
+
+		// Get the current question
+		console.log("Current question")
+		let question = game.current_question()
+		console.log(question)
+
+		// Setup question
+		question_span.innerText = question.name
+
+		// Set status
+		status_span.innerText = "None"
+	}
+</script>
