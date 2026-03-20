@@ -9,7 +9,7 @@ use crate::games::{GameState, GameTimelineSearchAndFetch, draw_stats};
 use eframe::egui::{self, Context, RichText, Ui, Vec2};
 use open_timeline_core::HasIdAndName;
 use open_timeline_games::GameManagement;
-use open_timeline_games::order_entities::{GameVariant, OrderEntitiesGame};
+use open_timeline_games::order_entities::{OrderEntitiesGame, OrderEntitiesGameVariant};
 use open_timeline_gui_core::{Draw, body_text_height};
 
 // TODO: dragging is a pain
@@ -38,7 +38,7 @@ impl OrderEntitiesGameGui {
 
     fn draw_question(&mut self, _ctx: &Context, ui: &mut Ui, enabled: bool) {
         // Show options
-        if let Some(current_question) = self.game.current_question.as_mut()
+        if let Some(current_question) = self.game.current_question().as_mut()
             && !current_question.is_empty()
         {
             ui.add_enabled_ui(enabled, |ui| {
@@ -84,7 +84,7 @@ impl OrderEntitiesGameGui {
         // Submit answer
         if enabled {
             if open_timeline_gui_core::Button::tall_full_width(ui, "Submit").clicked() {
-                let answer = self.game.current_question.clone().unwrap();
+                let answer = self.game.current_question().unwrap();
                 let _ = self.game.check_answer(answer);
                 self.state = GameState::WaitingForNextRound;
             }
@@ -115,13 +115,13 @@ impl Draw for OrderEntitiesGameGui {
         ui.horizontal(|ui| {
             ui.add_enabled_ui(self.state == GameState::NotStarted, |ui| {
                 ui.radio_value(
-                    &mut self.game.variant,
-                    GameVariant::OrderByFirstStarted,
+                    self.game.variant_mut(),
+                    OrderEntitiesGameVariant::OrderByFirstStarted,
                     "Order by start date",
                 );
                 ui.radio_value(
-                    &mut self.game.variant,
-                    GameVariant::OrderByFirstEnded,
+                    self.game.variant_mut(),
+                    OrderEntitiesGameVariant::OrderByFirstEnded,
                     "Order by end date",
                 );
             });
@@ -130,7 +130,7 @@ impl Draw for OrderEntitiesGameGui {
 
         // Stats
         if self.state.has_started() {
-            draw_stats(ctx, ui, self.game.stats);
+            draw_stats(ctx, ui, self.game.stats());
             ui.separator();
         }
 
@@ -175,7 +175,7 @@ impl Draw for OrderEntitiesGameGui {
             GameState::WaitingForNextRound => {
                 self.draw_question(ctx, ui, false);
                 ui.separator();
-                if let Some(last_answer) = self.game.last_answer.as_ref() {
+                if let Some(last_answer) = self.game.last_answer() {
                     ui.horizontal(|ui| {
                         ui.label("Last Answer");
                         open_timeline_gui_core::Label::strong(ui, &format!("{last_answer:?}"));

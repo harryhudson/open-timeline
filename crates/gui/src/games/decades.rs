@@ -34,8 +34,8 @@ impl DecadesGameGui {
     }
 
     fn draw_question(&mut self, _ctx: &Context, ui: &mut Ui, enabled: bool) {
-        if let Some(entity) = self.game.current_question.clone() {
-            if let Some(answers) = self.game.current_options.clone() {
+        if let Some(entity) = self.game.current_question() {
+            if let Some(answers) = self.game.current_options() {
                 let option_count = answers.len();
                 let spacing = widget_x_spacing(ui) * (option_count - 1) as f32;
                 let width = (ui.available_width() - spacing) / option_count as f32;
@@ -54,7 +54,6 @@ impl DecadesGameGui {
                                     );
                                     if answer_button.clicked() {
                                         info!("Correct");
-                                        self.game.current_selection = Some(answer);
                                         let _ = self.game.check_answer(answer);
                                         self.state = GameState::WaitingForNextRound;
                                     }
@@ -66,7 +65,6 @@ impl DecadesGameGui {
                                     );
                                     if answer_button.clicked() {
                                         info!("Incorrect");
-                                        self.game.current_selection = Some(answer);
                                         let _ = self.game.check_answer(answer);
                                         self.state = GameState::WaitingForNextRound;
                                     }
@@ -106,7 +104,7 @@ impl Draw for DecadesGameGui {
 
         // Stats
         if self.state.has_started() {
-            draw_stats(ctx, ui, self.game.stats);
+            draw_stats(ctx, ui, self.game.stats());
             ui.separator();
         }
 
@@ -151,7 +149,7 @@ impl Draw for DecadesGameGui {
             GameState::WaitingForNextRound => {
                 self.draw_question(ctx, ui, false);
                 ui.separator();
-                if let Some(last_answer) = self.game.last_answer.as_ref() {
+                if let Some(last_answer) = self.game.last_answer() {
                     ui.horizontal(|ui| {
                         ui.label("Last Answer");
                         open_timeline_gui_core::Label::strong(ui, &format!("{last_answer:?}"));

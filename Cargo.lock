@@ -3310,10 +3310,17 @@ name = "open-timeline-games"
 version = "0.1.0"
 dependencies = [
  "bool-tag-expr",
+ "console_error_panic_hook",
+ "console_log",
+ "getrandom 0.2.17",
  "log",
  "open-timeline-core",
  "rand 0.8.5",
+ "serde",
+ "serde-wasm-bindgen",
+ "serde_json",
  "thiserror 2.0.18",
+ "wasm-bindgen",
 ]
 
 [[package]]

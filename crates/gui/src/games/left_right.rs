@@ -39,7 +39,7 @@ impl LeftRightGameGui {
     }
 
     fn draw_question(&mut self, _ctx: &Context, ui: &mut Ui, enabled: bool) {
-        if let Some((left, right)) = self.game.current_question.clone() {
+        if let Some((left, right)) = self.game.current_question() {
             let spacing = widget_x_spacing(ui);
             let width = (ui.available_width() - spacing) / 2.0;
             let height = ui.available_height() / 3.0;
@@ -102,7 +102,7 @@ impl Draw for LeftRightGameGui {
 
         // Stats
         if self.state.has_started() {
-            draw_stats(ctx, ui, self.game.stats);
+            draw_stats(ctx, ui, self.game.stats());
             ui.separator();
         }
 
@@ -147,7 +147,7 @@ impl Draw for LeftRightGameGui {
             GameState::WaitingForNextRound => {
                 self.draw_question(ctx, ui, false);
                 ui.separator();
-                if let Some(last_answer) = self.game.last_answer.as_ref() {
+                if let Some(last_answer) = self.game.last_answer() {
                     ui.horizontal(|ui| {
                         ui.label("Last Answer");
                         open_timeline_gui_core::Label::strong(ui, &format!("{last_answer:?}"));
