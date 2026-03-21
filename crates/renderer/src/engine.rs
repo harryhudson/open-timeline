@@ -519,6 +519,12 @@ impl Engine {
         debug!("about to sort entities");
         self.sort_entities();
         self.re_calculate();
+
+        // After re-calculating we know the number of decades - if there are
+        // very few, increase the timeline scale
+        if self.date_range.decade_count < 10 {
+            self.set_datetime_scale(15.0 / self.date_range.decade_count as f64);
+        }
     }
 
     /// Overwrite the list of entities drawn on the timeline
@@ -844,6 +850,9 @@ impl Engine {
             .decade_range_end
             .saturating_sub(self.date_range.decade_range_start))
             / 10;
+
+        // There should be at least 1 decade (heading)
+        self.date_range.decade_count = self.date_range.decade_count.max(1);
     }
 
     /// Sort entities by start year
