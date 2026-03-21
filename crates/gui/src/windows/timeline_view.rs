@@ -269,10 +269,16 @@ impl Reload for TimelineViewGui {
                         Ok(timeline) => {
                             self.timeline_name = Some(timeline.name().to_owned());
                             if let Some(entities) = timeline.entities() {
+                                // Set the rendering engine entities
                                 self.timeline_renderer.set_entities(entities.clone());
+
+                                // Update the start and end dates
                                 let (start, end) = self.timeline_renderer.start_and_end_dates();
                                 self.start_date_limit = start as i64;
                                 self.end_date_limit = end as i64;
+
+                                // Update the datetime scaling
+                                self.datetime_scaling = self.timeline_renderer.datetime_scale();
                             }
                         }
                         Err(CrudError::IdNotInDb) => {

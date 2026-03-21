@@ -96,6 +96,10 @@ impl OpenTimelineRendererEgui {
         self.engine.set_sticky_text(sticky_text)
     }
 
+    pub fn datetime_scale(&mut self) -> f64 {
+        self.engine.datetime_scale()
+    }
+
     pub fn set_datetime_scale(&mut self, scale: f64) {
         self.engine.set_datetime_scale(scale)
     }
