@@ -1,13 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 //!
-//!
+//! Core engine for the which date game
 //!
 
 use super::*;
 
 impl WhichDateGame {
-    /// Create new WhichDateGame
     pub fn new() -> Self {
         Self::default()
     }

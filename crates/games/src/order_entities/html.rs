@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 //!
-//!
+//! HTML quiz generation for the order entities game
 //!
 
 use super::*;

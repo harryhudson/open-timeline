@@ -1,13 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 //!
-//!
+//! Core engine for the left-right game
 //!
 
 use super::*;
 
 impl LeftRightGame {
-    /// Create new LeftRightGame
     pub fn new() -> Self {
         Self::default()
     }

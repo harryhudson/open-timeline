@@ -31,7 +31,7 @@ pub enum LeftRightGameVariant {
 }
 
 /// State for the "left right" game
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct LeftRightGame {
     entity_pool: Vec<Entity>,
     stats: Stats,

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 //!
-//!
+//! Core engine for the decades game
 //!
 
 use super::*;
