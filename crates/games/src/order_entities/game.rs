@@ -1,13 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 //!
-//!
+//! Core engine for the order entities game
 //!
 
 use super::*;
 
 impl OrderEntitiesGame {
-    /// Create new OrderEntitiesGame
     pub fn new() -> Self {
         Self {
             min_entities_per_round: 4,

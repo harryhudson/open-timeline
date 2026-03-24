@@ -29,3 +29,29 @@ rand = "0.8.5"
 getrandom = { version = "0.2.17", features = ["js"] }
 serde-wasm-bindgen = "0.6"
 wasm-bindgen = "0.2.100"
+web-sys = { version = "0.3.77", features = [
+    "console",
+    "CanvasRenderingContext2d",
+    "CssStyleDeclaration",
+    "Document",
+    "DomStringMap",
+    "Element",
+    "HtmlElement",
+    "HtmlButtonElement",
+    "HtmlCanvasElement",
+    "HtmlDivElement",
+    "HtmlInputElement",
+    "HtmlSelectElement",
+    "HtmlSpanElement",
+    "ImageData",
+    "KeyboardEvent",
+    "MouseEvent",
+    "Node",
+    "NodeList",
+    "TouchEvent",
+    "TouchList",
+    "Touch",
+    "TextMetrics",
+    "WheelEvent",
+    "Window",
+] }

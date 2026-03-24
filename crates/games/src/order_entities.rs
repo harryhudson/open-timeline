@@ -22,7 +22,7 @@ pub enum OrderEntitiesGameVariant {
 }
 
 /// State for the order entities game
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct OrderEntitiesGame {
     entity_pool: Vec<Entity>,
     min_entities_per_round: usize,

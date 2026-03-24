@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 //!
-//!
+//! HTML quiz generation for the were they alive when game
 //!
 
 use super::*;

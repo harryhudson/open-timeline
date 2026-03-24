@@ -30,7 +30,7 @@ pub enum YearOrDecade {
 }
 
 /// State for the "which date" game
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct WhichDateGame {
     entity_pool: Vec<Entity>,
     year_or_decade: YearOrDecade,

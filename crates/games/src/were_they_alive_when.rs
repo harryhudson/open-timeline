@@ -19,7 +19,7 @@ use rand::{Rng, thread_rng};
 use serde::{Deserialize, Serialize};
 
 /// State for the "were they alive when" game
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct WereTheyAliveWhenGame {
     people_pool: Vec<Entity>,
     not_people_pool: Vec<Entity>,

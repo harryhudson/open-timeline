@@ -26,7 +26,7 @@ pub enum DecadesGameVariant {
 }
 
 /// State for the "decades" game
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct DecadesGame {
     entity_pool: Vec<Entity>,
     stats: Stats,

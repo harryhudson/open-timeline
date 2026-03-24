@@ -1,14 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 //!
-//!
+//! Core engine for the were they alive when game
 //!
 
 use super::*;
 use bool_tag_expr::TagValue;
 
 impl WereTheyAliveWhenGame {
-    /// Create new WereTheyAliveWhenGame
     pub fn new() -> Self {
         Self::default()
     }
