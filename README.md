@@ -3,7 +3,16 @@
 - **Dataset**: [harryhudson/open-timeline-data](https://github.com/harryhudson/open-timeline-data)
     - Open to - and in need of - contributions
 - **Website**: [www.open-timeline.org](https://www.open-timeline.org)
-    - For a good example of a rendered timeline see [The History of the United States](https://www.open-timeline.org/timeline/0b39b2a8-8e04-40f3-a0c6-d2b60f6a8679/view)
+    - For a good example of a rendered timeline see [United States](https://www.open-timeline.org/timeline/0b39b2a8-8e04-40f3-a0c6-d2b60f6a8679/view)
+- **Crates**:
+    - [open-timeline-core](https://crates.io/crates/open-timeline-core)
+    - [open-timeline-crud](https://crates.io/crates/open-timeline-crud)
+    - [open-timeline-games](https://crates.io/crates/open-timeline-games)
+    - [open-timeline-gui](https://crates.io/crates/open-timeline-gui)
+    - [open-timeline-gui-core](https://crates.io/crates/open-timeline-gui-core)
+    - [open-timeline-macros](https://crates.io/crates/open-timeline-macros)
+    - [open-timeline-renderer](https://crates.io/crates/open-timeline-renderer)
+    - [open-timeline-www-api](https://crates.io/crates/open-timeline-www-api)
 - **Desktop GUI screenshots**: *see bottom*
 
 ## About
