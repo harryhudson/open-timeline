@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>OpenTimeline HTML Canvas Frontend Test</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Quintessential&display=swap" rel="stylesheet">
 </head>
 <body>
     <h2>HTML Canvas Test</h2>
@@ -54,6 +56,11 @@
             const res = await fetch('entities.json');
             return await res.json();
         }
+
+        // Update the font (the size is set by the timeline engine)
+        document.fonts.load("1px EB Garamond").then(() => {
+            timeline_renderer.set_font_style("EB Garamond");
+        });
 
         //----------------------------------------------------------------------
         // Slider (TODO: adjust timeline padding)

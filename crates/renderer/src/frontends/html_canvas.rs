@@ -86,11 +86,12 @@ pub fn measure_text(font_size: f64, text: &str) -> TextMetrics {
         .dyn_into::<CanvasRenderingContext2d>()
         .unwrap();
 
+    // Ensure the font style/size is set correctly
     let font_size = font_size * device_pixel_ratio();
+    let font_style = set_font_size_in_font_style(ctx.font(), font_size);
+    ctx.set_font(&font_style);
 
-    let font_style = "serif";
-    ctx.set_font(&format!("{font_size}px {font_style}"));
-
+    // Measure the text
     ctx.measure_text(&text).unwrap()
 }
 
@@ -335,6 +336,22 @@ impl OpenTimelineRendererHtmlCanvas {
         self.draw();
         // debug!("redrawn with new entities");
         Ok(())
+    }
+
+    #[wasm_bindgen]
+    pub fn set_font_style(&mut self, font_style: &str) {
+        // Set the font size of the new font style to the current font size
+        let font_style = {
+            let font_style = font_style.to_string();
+            let font_size = self.engine.borrow().effective_font_size_px();
+            set_font_size_in_font_style(font_style, font_size)
+        };
+        info!("New font: {font_style}");
+
+        // Use the new font
+        let drawing_surfaces = self.drawing_surfaces.borrow_mut();
+        drawing_surfaces.visible.ctx.set_font(&font_style);
+        drawing_surfaces.invisible.ctx.set_font(&font_style);
     }
 
     //--------------------------------------------------------------------------
@@ -953,4 +970,56 @@ fn set_canvas_sizes(engine: &Rc<RefCell<Engine>>, drawing_surfaces: &Rc<RefCell<
         .invisible
         .ctx
         .set_font(&context_font);
+}
+
+/// Set the font size of a font style
+///
+/// e.g.
+///
+/// `15px Arial` -> `30px Arial`
+/// `Arial` -> `15px Arial`
+/// `italic bold 18px Arial` -> "italic bold 24px Arial"
+fn set_font_size_in_font_style(font_style: String, new_size: f64) -> String {
+    // Track whether a font size has been altered
+    let mut replaced = false;
+
+    // Iterate over the parts of the font style, updating any font sizes
+    let font_style = font_style
+        .split_whitespace()
+        .into_iter()
+        .map(|part| {
+            if part.ends_with("px") && part[..part.len() - 2].parse::<f32>().is_ok() {
+                replaced = true;
+                format!("{}px", new_size)
+            } else {
+                part.to_string()
+            }
+        })
+        .collect::<Vec<String>>()
+        .join(" ");
+
+    if replaced {
+        // Font size already replaced/found
+        font_style
+    } else {
+        // No font size replaced/found - add one
+        format!("{}px {}", new_size, font_style)
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_set_font_size_in_font_style() {
+        for (from, to) in [
+            ("15px Arial", "30px Arial"),
+            ("Arial", "30px Arial"),
+            ("italic bold 18px Arial", "italic bold 30px Arial"),
+        ] {
+            let new = set_font_size_in_font_style(from.to_string(), 30.0);
+            assert_eq!(new, to);
+        }
+    }
 }
