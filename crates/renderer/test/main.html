@@ -1,72 +1,193 @@
 <!DOCTYPE html>
 <html lang="en-gb">
 <head>
-    <meta charset="UTF-8">
-    <title>OpenTimeline HTML Canvas Frontend Test</title>
+	<meta charset="UTF-8">
+	<title>OpenTimeline HTML Canvas Frontend Test</title>
 
-    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Quintessential&display=swap" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Quintessential&display=swap" rel="stylesheet">
 </head>
 <body>
-    <h2>HTML Canvas Test</h2>
+	<h2>HTML Canvas Test</h2>
 
-    <input
-        type="range"
-        min="0"
-        max="100"
-        value="50"
-        id="slider"
-    />
-    <span id="value">50</span>
+	<hr>
+		<label>
+			<input type="checkbox" name="start-limit-active">
+			Start year limit
+		</label>
+		<input start-date-limit
+			disabled="true"
+			type="number"
+			min="-100"
+			max="2500"
+		/>
 
-    <div style="width: 100%; height: 400px; border: 0.5px solid black;">
-        <canvas visible style="display: block;"></canvas>
-    </div>
-    <div style="width: 100%; height: 400px; border: 0.5px solid black;">
-        <canvas invisible style="display: block;"></canvas>
-    </div>
-    
-    <!-- <canvas id="canvas"></canvas> -->
-    <!-- <open-timeline-canvas></open-timeline-canvas> -->
+		<label>
+			<input type="checkbox" name="end-limit-active">
+			End year limit
+		</label>
+		<input end-date-limit
+			disabled="true"
+			type="number"
+			min="-100"
+			max="2500"
+		/>
+
+	<hr>
+		<span>Date scale</span>
+		<input
+			type="range"
+			min="0"
+			max="50"
+			value="2"
+			id="slider"
+		/>
+
+	<hr>
+		<label>
+			<input type="checkbox" name="sticky-text">
+			Sticky text
+		</label>
+
+	<hr>
+		<label>
+			<input type="checkbox" name="bool-tag-expr-filter-active">
+			Bool tag expr filter
+		</label>
+		<input bool-tag-expr-filter
+			disabled="true"
+			type="text"
+			placeholder="e.g. 'person | painting'"
+		/>
+	<hr>
+
+	<div style="width: 100%; height: 400px; border: 0.5px solid black;">
+		<canvas visible style="display: block;"></canvas>
+	</div>
+	<div style="width: 100%; height: 400px; border: 0.5px solid black;">
+		<canvas invisible style="display: block;"></canvas>
+	</div>
+
+	<!-- <canvas id="canvas"></canvas> -->
+	<!-- <open-timeline-canvas></open-timeline-canvas> -->
 </body>
 </html>
 
 <script type="module">
-        import init, * as OpenTimeline from "./../pkg/open_timeline_renderer.js";
-        await init();
+	import init, * as OpenTimeline from "./../pkg/open_timeline_renderer.js";
+	await init();
 
-        // TODO: make sure this is UTF-8 so that glyphs are rendered correctly (eg Eugene Delecriox obviously wrong otherwise)
-        console.log(document.characterSet);
+	//--------------------------------------------------------------------------
+	//
+	//--------------------------------------------------------------------------
+	const input_start_year_limit = document.querySelector('input[start-date-limit]')
+	const input_end_year_limit = document.querySelector('input[end-date-limit]')
+	const input_start_checkbox = document.querySelector("input[type=checkbox][name=start-limit-active]")
+	const input_end_checkbox = document.querySelector("input[type=checkbox][name=end-limit-active]")
 
-        let timeline_renderer = new OpenTimeline.OpenTimelineRendererHtmlCanvas();
-        timeline_renderer.add_entities(await get_entities());
+	const sticky_text_checkbox = document.querySelector("input[type=checkbox][name=sticky-text]")
 
-        // Start animation/draw loop (doesn't seem to speed things up, but does simplify the Rust a tad)
-        function animationLoop() {
-            timeline_renderer.draw();
-            requestAnimationFrame(animationLoop);
-        }
-        requestAnimationFrame(animationLoop);
+	const bool_tag_expr_filter = document.querySelector("input[type=text][bool-tag-expr-filter]")
+	const bool_tag_expr_filter_checkbox = document.querySelector("input[type=checkbox][name=bool-tag-expr-filter-active]")
 
-        async function get_entities() {
-            const entities = await all_entities();
-            return entities.filter(entity => entity.start.year > 1600);
-        }
+	//--------------------------------------------------------------------------
+	// Make sure this is UTF-8 so that glyphs are rendered correctly (eg Eugene
+	// Delecriox obviously wrong otherwise)
+	//--------------------------------------------------------------------------
+	console.log(document.characterSet);
 
-        async function all_entities() {
-            const res = await fetch('entities.json');
-            return await res.json();
-        }
+	// Setup timeline entities
+	let timeline_renderer = new OpenTimeline.OpenTimelineRendererHtmlCanvas();
+	timeline_renderer.add_entities(await get_entities());
 
-        // Update the font (the size is set by the timeline engine)
-        document.fonts.load("1px EB Garamond").then(() => {
-            timeline_renderer.set_font_style("EB Garamond");
-        });
+	// Setup start & end dates
+	let start_and_end_years = timeline_renderer.start_and_end_years()
+	input_start_year_limit.value = start_and_end_years.start
+	input_end_year_limit.value = start_and_end_years.end
 
-        //----------------------------------------------------------------------
-        // Slider (TODO: adjust timeline padding)
-        //----------------------------------------------------------------------
-        document.getElementById('slider').addEventListener('input', event => {
-            document.getElementById('value').textContent = event.target.value;
-            console.log('Slider value:', event.target.value);
-        });
+	//--------------------------------------------------------------------------
+	// Start animation/draw loop (doesn't seem to speed things up, but does simplify the Rust a tad)
+	//--------------------------------------------------------------------------
+	function animationLoop() {
+		timeline_renderer.draw();
+		requestAnimationFrame(animationLoop);
+	}
+	requestAnimationFrame(animationLoop);
+
+	//--------------------------------------------------------------------------
+	// Get entities for timeline
+	//--------------------------------------------------------------------------
+	async function get_entities() {
+		const entities = await all_entities();
+		return entities.filter(entity => entity.start.year > 1600);
+	}
+	async function all_entities() {
+		const res = await fetch('entities.json');
+		return await res.json();
+	}
+
+	//--------------------------------------------------------------------------
+	// Update the font (the size is set by the timeline engine)
+	//--------------------------------------------------------------------------
+	document.fonts.load("1px EB Garamond").then(() => {
+		timeline_renderer.set_font_style("EB Garamond");
+	});
+
+	//--------------------------------------------------------------------------
+	// Date limits
+	//--------------------------------------------------------------------------
+	input_start_year_limit.addEventListener('input', event => {
+		set_year_limits()
+	});
+	input_end_year_limit.addEventListener('input', event => {
+		set_year_limits()
+	});
+	input_start_checkbox.addEventListener('change', event => {
+		set_year_limits()
+		input_start_year_limit.disabled = !input_start_checkbox.checked
+	})
+	input_end_checkbox.addEventListener('change', event => {
+		set_year_limits()
+		input_end_year_limit.disabled = !input_end_checkbox.checked
+	})
+
+	function set_year_limits() {
+		let start_limit = input_start_checkbox.checked ? input_start_year_limit.value : null
+		let end_limit = input_end_checkbox.checked ? input_end_year_limit.value : null
+		timeline_renderer.set_year_limits(start_limit, end_limit)
+		console.log('Date limits = ', start_limit, end_limit);
+	}
+
+	//--------------------------------------------------------------------------
+	// Sticky text
+	//--------------------------------------------------------------------------
+	sticky_text_checkbox.addEventListener('change', (event) => {
+		const checked = event.target.checked
+		console.log("Set sticky text = ", checked)
+		timeline_renderer.set_sticky_text(checked);
+	})
+
+	//--------------------------------------------------------------------------
+	// Bool tag expr filter
+	//--------------------------------------------------------------------------
+	bool_tag_expr_filter.addEventListener('input', (event) => {
+		timeline_renderer.set_tag_bool_expr_entity_filter(bool_tag_expr_filter.value);
+	})
+	bool_tag_expr_filter_checkbox.addEventListener('change', (event) => {
+		if (bool_tag_expr_filter_checkbox.checked) {
+			bool_tag_expr_filter.disabled = false
+			timeline_renderer.set_tag_bool_expr_entity_filter(bool_tag_expr_filter.value);
+		} else {
+			bool_tag_expr_filter.disabled = true
+			timeline_renderer.remove_tag_bool_expr_entity_filter();
+		}
+	})
+
+	//--------------------------------------------------------------------------
+	// Slider (TODO: adjust timeline padding)
+	//--------------------------------------------------------------------------
+	document.getElementById('slider').addEventListener('input', event => {
+		const scale = event.target.value;
+		timeline_renderer.set_datetime_scale(scale)
+		console.log('Date scale = ', scale);
+	});
 </script>
