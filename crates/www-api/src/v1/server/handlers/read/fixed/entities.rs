@@ -8,7 +8,7 @@ use crate::v1::error::ApiError;
 use axum::Json;
 use axum::extract::State;
 use open_timeline_core::{Entity, IsReducedType, ReducedEntities};
-use open_timeline_crud::{FetchAll, FetchById};
+use open_timeline_crud::{FetchAll, FetchById, TagCounts, fetch_all_entity_tag_counts};
 use sqlx::{Pool, Sqlite};
 use std::sync::Arc;
 
@@ -30,4 +30,12 @@ pub async fn handle_get_entities_full(
         full.push(Entity::fetch_by_id(&mut transaction, &reduced.id()).await?);
     }
     Ok(Json(full))
+}
+
+/// Handle a request to fetch all entity tags
+pub async fn handle_get_entities_tags(
+    State(pool): State<Arc<Pool<Sqlite>>>,
+) -> Result<Json<TagCounts>, ApiError> {
+    let mut transaction = pool.begin().await.unwrap();
+    Ok(Json(fetch_all_entity_tag_counts(&mut transaction).await?))
 }

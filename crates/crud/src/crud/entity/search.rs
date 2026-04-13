@@ -9,8 +9,7 @@ use bool_tag_expr::BoolTagExpr;
 use open_timeline_core::{
     Date, Entity, IsReducedCollection, Name, OpenTimelineId, ReducedEntities, ReducedEntity,
 };
-use serde::Deserialize;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use sqlx::{Sqlite, Transaction};
 use std::collections::BTreeSet;
 use std::fmt::Display;

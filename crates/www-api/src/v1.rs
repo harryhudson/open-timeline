@@ -45,9 +45,7 @@ impl OpenTimelineWebApi {
         api_mode: ApiMode,
     ) -> anyhow::Result<()> {
         // Get the router
-        let api_router = prepare_api_router(pool, access_mode, api_mode)
-            .await
-            .unwrap();
+        let api_router = Self::router(pool, access_mode, api_mode).unwrap();
 
         // Specify the IP addr and port number
         let addr = format!("0.0.0.0:{port}");
@@ -64,26 +62,26 @@ impl OpenTimelineWebApi {
         // Won't actually get here if the server is running
         Ok(())
     }
-}
 
-/// Set up and serve the API
-async fn prepare_api_router(
-    pool: Pool<Sqlite>,
-    access_mode: ApiAccessMode,
-    api_mode: ApiMode,
-) -> anyhow::Result<Router> {
-    // Get the router
-    let apiv1 = server::handlers::router(access_mode, api_mode)?;
+    /// Set up the JSON web API router
+    pub fn router(
+        pool: Pool<Sqlite>,
+        access_mode: ApiAccessMode,
+        api_mode: ApiMode,
+    ) -> anyhow::Result<Router> {
+        // Get the router
+        let apiv1 = server::handlers::router(access_mode, api_mode)?;
 
-    // Add the state
-    let apiv1 = apiv1.with_state(Arc::new(pool));
+        // Add the state
+        let apiv1 = apiv1.with_state(Arc::new(pool));
 
-    // Add URL path prefix
-    let api = Router::new().nest("/api/v1", apiv1);
+        // Add URL path prefix
+        let api = Router::new().nest("/api/v1", apiv1);
 
-    // Add /health endpoint
-    let api = api.route("/health", get(|| async { Json(json!({ "status": "ok" })) }));
+        // Add /health endpoint
+        let api = api.route("/health", get(|| async { Json(json!({ "status": "ok" })) }));
 
-    // Return the router
-    Ok(api)
+        // Return the router
+        Ok(api)
+    }
 }
