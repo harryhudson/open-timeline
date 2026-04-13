@@ -10,9 +10,11 @@
 //!
 
 use crate::{Colour, Engine, FilledBox, Position, ScalableLayoutParams, TextOut};
+use bool_tag_expr::BoolTagExpr;
 use chrono::Local;
 use log::{debug, info};
-use open_timeline_core::{Entity, HasIdAndName, OpenTimelineId};
+use open_timeline_core::{Date, Entity, HasIdAndName, OpenTimelineId};
+use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
@@ -69,7 +71,7 @@ use web_sys::{
 
 /// Function supplied to the [`Engine`] so that it can measure text (used in its
 /// calculations)
-pub fn measure_text(font_size: f64, text: &str) -> TextMetrics {
+fn measure_text(font_size: f64, text: &str) -> TextMetrics {
     let window = web_sys::window().unwrap();
     let document = window.document().unwrap();
     let canvas = document
@@ -118,16 +120,32 @@ macro_rules! _generate_simple_get_and_set {
 
 /// Function supplied to the [`Engine`] so that it can measure text (used in its
 /// calculations)
-pub fn measure_text_for_engine(font_size: f64, text: String) -> (f64, f64) {
+fn measure_text_for_engine(font_size: f64, text: String) -> (f64, f64) {
     let measurements = measure_text(font_size, &text);
     let height =
         measurements.actual_bounding_box_ascent() + measurements.actual_bounding_box_descent();
     (measurements.width(), height)
 }
 
+/// For passing year limits back to JavaScript
+#[wasm_bindgen]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub struct YearLimits {
+    pub start: Option<i32>,
+    pub end: Option<i32>,
+}
+
+/// For passing start & end years back to JavaScript
+#[wasm_bindgen]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub struct StartAndEndYears {
+    pub start: i32,
+    pub end: i32,
+}
+
 /// Setup WASM logging & console log any panics
 #[wasm_bindgen(start)]
-pub fn start() -> Result<(), JsValue> {
+fn start() -> Result<(), JsValue> {
     // TODO: where to put this?
     std::panic::set_hook(Box::new(console_error_panic_hook::hook));
     console_log::init_with_level(log::Level::Debug).expect("error initializing log");
@@ -354,6 +372,65 @@ impl OpenTimelineRendererHtmlCanvas {
         drawing_surfaces.invisible.ctx.set_font(&font_style);
     }
 
+    #[wasm_bindgen]
+    pub fn start_and_end_years(&self) -> StartAndEndYears {
+        let (start, end) = self.engine.borrow().start_and_end_dates();
+        StartAndEndYears { start, end }
+    }
+
+    #[wasm_bindgen]
+    pub fn year_limits(&self) -> YearLimits {
+        let (start, end) = self.engine.borrow().date_limits();
+        let start = start.map(|date| date.year().value());
+        let end = end.map(|date| date.year().value());
+        YearLimits { start, end }
+    }
+
+    #[wasm_bindgen]
+    pub fn set_year_limits(&mut self, start: Option<i64>, end: Option<i64>) -> Result<(), JsValue> {
+        let start = start
+            .map(|year| Date::from(None, None, year))
+            .transpose()
+            .map_err(|error| error.to_string())?;
+        let end = end
+            .map(|year| Date::from(None, None, year))
+            .transpose()
+            .map_err(|error| error.to_string())?;
+        self.engine.borrow_mut().set_date_limits(start, end);
+        Ok(())
+    }
+
+    #[wasm_bindgen]
+    pub fn set_datetime_scale(&mut self, scale: f64) {
+        self.engine.borrow_mut().set_datetime_scale(scale);
+    }
+
+    #[wasm_bindgen]
+    pub fn sticky_text(&self) -> bool {
+        self.engine.borrow().sticky_text()
+    }
+
+    #[wasm_bindgen]
+    pub fn set_sticky_text(&mut self, sticky_text: bool) {
+        self.engine.borrow_mut().set_sticky_text(sticky_text);
+    }
+
+    #[wasm_bindgen]
+    pub fn set_tag_bool_expr_entity_filter(&mut self, tag_bool_expr: &str) -> Result<(), JsValue> {
+        let tag_bool_expr = BoolTagExpr::from(tag_bool_expr).map_err(|error| error.to_string())?;
+        self.engine
+            .borrow_mut()
+            .set_tag_bool_expr_entity_filter(tag_bool_expr);
+        Ok(())
+    }
+
+    #[wasm_bindgen]
+    pub fn remove_tag_bool_expr_entity_filter(&mut self) {
+        self.engine
+            .borrow_mut()
+            .remove_tag_bool_expr_entity_filter();
+    }
+
     //--------------------------------------------------------------------------
     //
     //--------------------------------------------------------------------------
@@ -403,7 +480,7 @@ impl OpenTimelineRendererHtmlCanvas {
     }
 
     /// Mousedown event handler
-    pub fn listen_for_mousedown(&mut self) {
+    fn listen_for_mousedown(&mut self) {
         let state_clone = self.state.clone();
         self.add_listener::<web_sys::MouseEvent, _>(
             EventListenTarget::VisibleCanvas,
@@ -417,7 +494,7 @@ impl OpenTimelineRendererHtmlCanvas {
 
     // TODO: identical to mouseleave
     /// Mouseup event handler
-    pub fn listen_for_mouseup(&mut self) {
+    fn listen_for_mouseup(&mut self) {
         let state = self.state.clone();
         self.add_listener::<web_sys::MouseEvent, _>(
             EventListenTarget::VisibleCanvas,
@@ -436,7 +513,7 @@ impl OpenTimelineRendererHtmlCanvas {
     }
 
     /// Mouseout event handler
-    pub fn listen_for_mouseleave(&mut self) {
+    fn listen_for_mouseleave(&mut self) {
         let state = self.state.clone();
         self.add_listener::<web_sys::MouseEvent, _>(
             EventListenTarget::VisibleCanvas,
@@ -457,7 +534,7 @@ impl OpenTimelineRendererHtmlCanvas {
     /// Mousemove event
     ///
     /// Assume the mouse is over the timeline
-    pub fn listen_for_mousemove(&mut self) {
+    fn listen_for_mousemove(&mut self) {
         let drawing_surfaces = self.drawing_surfaces.clone();
         let engine = self.engine.clone();
         let state = self.state.clone();
@@ -497,7 +574,7 @@ impl OpenTimelineRendererHtmlCanvas {
     /// Touch start event handler
     ///
     /// Double tap to zoom in, triple tap to zoom out
-    pub fn listen_for_touchstart(&mut self) {
+    fn listen_for_touchstart(&mut self) {
         let engine = self.engine.clone();
         let state = self.state.clone();
         self.add_listener::<web_sys::TouchEvent, _>(
@@ -586,7 +663,7 @@ impl OpenTimelineRendererHtmlCanvas {
     }
 
     /// Touch move event handler
-    pub fn listen_for_touchmove(&mut self) {
+    fn listen_for_touchmove(&mut self) {
         let engine = self.engine.clone();
         let state = self.state.clone();
         self.add_listener::<web_sys::TouchEvent, _>(
@@ -621,7 +698,7 @@ impl OpenTimelineRendererHtmlCanvas {
     }
 
     /// Touch end event handler
-    pub fn listen_for_touchend(&mut self) {
+    fn listen_for_touchend(&mut self) {
         let state = self.state.clone();
         self.add_listener::<web_sys::TouchEvent, _>(
             EventListenTarget::VisibleCanvas,
@@ -636,7 +713,7 @@ impl OpenTimelineRendererHtmlCanvas {
     }
 
     /// Scroll event handler
-    pub fn listen_for_scroll(&mut self) {
+    fn listen_for_scroll(&mut self) {
         let engine = self.engine.clone();
         self.add_listener::<web_sys::WheelEvent, _>(
             EventListenTarget::VisibleCanvas,
@@ -678,7 +755,7 @@ impl OpenTimelineRendererHtmlCanvas {
     ///
     /// Emit a custom event so that user can make use of the new
     /// selection (eg fill a form)
-    pub fn listen_for_click(&mut self) {
+    fn listen_for_click(&mut self) {
         let drawing_surfaces = self.drawing_surfaces.clone();
         let engine = self.engine.clone();
         let state = self.state.clone();
@@ -700,7 +777,7 @@ impl OpenTimelineRendererHtmlCanvas {
     }
 
     /// Manage a keydown event
-    pub fn listen_for_keydown(&mut self) {
+    fn listen_for_keydown(&mut self) {
         let drawing_surfaces = self.drawing_surfaces.clone();
         self.add_listener::<web_sys::KeyboardEvent, _>(
             EventListenTarget::Window,

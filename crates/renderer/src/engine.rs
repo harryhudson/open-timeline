@@ -265,7 +265,7 @@ impl Engine {
                     entity.text.colour = Colour::lightened_colour(entity.text.colour);
                 }
                 let mut entity = entity.clone_with_added_offset(self.offset.x, y_offset);
-                if self.sticky_text {
+                if self.sticky_text() {
                     entity.adjust_sticky_text(self.zoomed_layout_params.padding_x);
                 }
                 entity
@@ -443,6 +443,11 @@ impl Engine {
         self.date_range.start_date_cutoff = start;
         self.date_range.end_date_cutoff = end;
         self.re_calculate();
+    }
+
+    ///
+    pub fn sticky_text(&self) -> bool {
+        self.sticky_text
     }
 
     ///
