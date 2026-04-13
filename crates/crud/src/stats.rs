@@ -5,9 +5,8 @@
 //!
 
 use crate::CrudError;
-use sqlx::Row;
-use sqlx::Sqlite;
-use sqlx::Transaction;
+use serde::{Deserialize, Serialize};
+use sqlx::{Row, Sqlite, Transaction};
 
 /// Each variant maps to a table in the database
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
@@ -32,7 +31,7 @@ pub enum Table {
 }
 
 /// Holds database row counts
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+#[derive(Clone, Debug, Deserialize, Serialize, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct DatabaseRowCount {
     /// The number of rows in the `entities` table
     pub entities: i64,

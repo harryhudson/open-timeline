@@ -6,6 +6,7 @@
 
 pub mod entities;
 pub mod entity;
+pub mod stats;
 pub mod tags;
 pub mod timeline;
 pub mod timelines;
