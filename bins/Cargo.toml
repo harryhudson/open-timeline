@@ -34,6 +34,7 @@ open-timeline-crud = { workspace = true  }
 open-timeline-gui = { workspace = true }
 open-timeline-www-api = { workspace = true }
 
+anyhow = "1.0.102"
 axum = "0.8.1"
 clap = { version = "4.5.26", features = ["derive"] }
 eframe = "0.33.3"
