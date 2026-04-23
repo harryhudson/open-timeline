@@ -196,7 +196,7 @@ impl Date {
         Self::from(
             Some(today.day().into()),
             Some(month.value().into()),
-            today.day().into(),
+            today.year().into(),
         )
         .unwrap()
     }

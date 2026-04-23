@@ -21,6 +21,7 @@ pub fn router(api_mode: ApiMode) -> Result<Router<Arc<Pool<Sqlite>>>, sqlx::Erro
         .route("/entity/{id-or-name}/timelines", get(fixed::entity::handle_get_entity_direct_member_of_which_timelines))
         .route("/timeline/{id-or-name}/edit",    get(fixed::timeline::handle_get_timeline_for_edit))
         .route("/timeline/{id-or-name}/view",    get(fixed::timeline::handle_get_timeline_for_view))
+        .route("/timeline/{id-or-name}/calendar",get(fixed::ics::handle_get_timeline_calendar))
         .route("/tags",                          get(fixed::tags::handle_get_tags))
         .route("/stats",                         get(fixed::stats::handle_get_stats))
         .route("/entities/tags",                 get(fixed::entities::handle_get_entities_tags))
