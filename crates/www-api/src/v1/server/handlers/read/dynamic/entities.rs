@@ -23,7 +23,7 @@ pub async fn handle_get_entities_reduced(
     Query(params): Query<PartialNameQueryParams>,
 ) -> Result<Json<ReducedEntities>, ApiError> {
     // Get the transaction
-    let mut transaction = pool.begin().await.unwrap();
+    let mut transaction = pool.begin().await?;
 
     // TODO: is this correct?
     if params.partial_name.is_empty() {
@@ -47,7 +47,7 @@ pub async fn handle_get_random_entities(
     Query(params): Query<HashMap<String, String>>,
 ) -> Result<Json<Vec<Entity>>, ApiError> {
     // Get the transaction
-    let mut transaction = pool.begin().await.unwrap();
+    let mut transaction = pool.begin().await?;
 
     let limit = params
         .get("limit")

@@ -16,6 +16,6 @@ use std::sync::Arc;
 pub async fn handle_get_tags(
     State(pool): State<Arc<Pool<Sqlite>>>,
 ) -> Result<Json<Tags>, ApiError> {
-    let mut transaction = pool.begin().await.unwrap();
+    let mut transaction = pool.begin().await?;
     Ok(Json(Tags::fetch_all(&mut transaction).await?))
 }

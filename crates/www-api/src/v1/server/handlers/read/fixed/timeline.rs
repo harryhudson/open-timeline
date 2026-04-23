@@ -17,7 +17,7 @@ pub async fn handle_get_timeline_for_edit(
     State(pool): State<Arc<Pool<Sqlite>>>,
     Path(id_or_name): Path<String>,
 ) -> Result<Json<TimelineEdit>, ApiError> {
-    let mut transaction = pool.begin().await.unwrap();
+    let mut transaction = pool.begin().await?;
     let timeline = match timeline_id_or_name(&mut transaction, id_or_name).await? {
         Some(IdOrName::Id(id)) => Ok(TimelineEdit::fetch_by_id(&mut transaction, &id).await?),
         Some(IdOrName::Name(name)) => {
@@ -33,7 +33,7 @@ pub async fn handle_get_timeline_for_view(
     State(pool): State<Arc<Pool<Sqlite>>>,
     Path(id_or_name): Path<String>,
 ) -> Result<Json<TimelineView>, ApiError> {
-    let mut transaction = pool.begin().await.unwrap();
+    let mut transaction = pool.begin().await?;
     Ok(Json(
         match timeline_id_or_name(&mut transaction, id_or_name).await? {
             Some(IdOrName::Id(id)) => Ok(TimelineView::fetch_by_id(&mut transaction, &id).await?),

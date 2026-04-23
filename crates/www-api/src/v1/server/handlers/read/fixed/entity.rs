@@ -18,7 +18,7 @@ pub async fn handle_get_entity(
     State(pool): State<Arc<Pool<Sqlite>>>,
     Path(id_or_name): Path<String>,
 ) -> Result<Json<Entity>, ApiError> {
-    let mut transaction = pool.begin().await.unwrap();
+    let mut transaction = pool.begin().await?;
     let id = entity_id_from_id_or_name(&mut transaction, id_or_name).await?;
     let entity = Entity::fetch_by_id(&mut transaction, &id).await?;
     Ok(Json(entity))
@@ -29,7 +29,7 @@ pub async fn handle_get_entity_direct_member_of_which_timelines(
     State(pool): State<Arc<Pool<Sqlite>>>,
     Path(id_or_name): Path<String>,
 ) -> Result<Json<ReducedTimelines>, ApiError> {
-    let mut transaction = pool.begin().await.unwrap();
+    let mut transaction = pool.begin().await?;
     let id = entity_id_from_id_or_name(&mut transaction, id_or_name).await?;
     let result = fetch_timelines_that_entity_is_direct_member_of(&mut transaction, &id).await?;
     Ok(Json(result))
