@@ -16,7 +16,7 @@ use std::sync::Arc;
 pub async fn handle_get_timelines_reduced(
     State(pool): State<Arc<Pool<Sqlite>>>,
 ) -> Result<Json<ReducedTimelines>, ApiError> {
-    let mut transaction = pool.begin().await.unwrap();
+    let mut transaction = pool.begin().await?;
     Ok(Json(ReducedTimelines::fetch_all(&mut transaction).await?))
 }
 
@@ -24,7 +24,7 @@ pub async fn handle_get_timelines_reduced(
 pub async fn handle_get_timelines_edit(
     State(pool): State<Arc<Pool<Sqlite>>>,
 ) -> Result<Json<Vec<TimelineEdit>>, ApiError> {
-    let mut transaction = pool.begin().await.unwrap();
+    let mut transaction = pool.begin().await?;
     let mut full = Vec::new();
     for reduced in ReducedTimelines::fetch_all(&mut transaction).await? {
         full.push(TimelineEdit::fetch_by_id(&mut transaction, &reduced.id()).await?);
@@ -36,6 +36,6 @@ pub async fn handle_get_timelines_edit(
 pub async fn handle_get_timelines_tags(
     State(pool): State<Arc<Pool<Sqlite>>>,
 ) -> Result<Json<TagCounts>, ApiError> {
-    let mut transaction = pool.begin().await.unwrap();
+    let mut transaction = pool.begin().await?;
     Ok(Json(fetch_all_timeline_tag_counts(&mut transaction).await?))
 }

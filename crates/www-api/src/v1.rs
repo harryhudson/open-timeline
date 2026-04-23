@@ -45,7 +45,7 @@ impl OpenTimelineWebApi {
         api_mode: ApiMode,
     ) -> anyhow::Result<()> {
         // Get the router
-        let api_router = Self::router(pool, access_mode, api_mode).unwrap();
+        let api_router = Self::router(pool, access_mode, api_mode)?;
 
         // Specify the IP addr and port number
         let addr = format!("0.0.0.0:{port}");

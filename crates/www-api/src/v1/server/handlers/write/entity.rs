@@ -18,7 +18,7 @@ pub async fn handle_put_entity(
     State(pool): State<Arc<Pool<Sqlite>>>,
     Json(mut payload): Json<Entity>,
 ) -> Result<Json<Entity>, ApiError> {
-    let mut transaction = pool.begin().await.unwrap();
+    let mut transaction = pool.begin().await?;
 
     // TODO: move this into macro (was having difficulty)
     payload.clear_id();
@@ -32,7 +32,7 @@ pub async fn handle_patch_entity(
     State(pool): State<Arc<Pool<Sqlite>>>,
     Json(payload): Json<Entity>,
 ) -> Result<Json<Entity>, ApiError> {
-    let mut transaction = pool.begin().await.unwrap();
+    let mut transaction = pool.begin().await?;
     let result = patch(&mut transaction, payload).await?;
     transaction.commit().await?;
     Ok(result)
@@ -43,7 +43,7 @@ pub async fn handle_delete_entity(
     State(pool): State<Arc<Pool<Sqlite>>>,
     Path(id_or_name): Path<String>,
 ) -> Result<Json<()>, ApiError> {
-    let mut transaction = pool.begin().await.unwrap();
+    let mut transaction = pool.begin().await?;
     let id = entity_id_from_id_or_name(&mut transaction, id_or_name).await?;
     Entity::delete_by_id(&mut transaction, &id).await?;
     transaction.commit().await?;

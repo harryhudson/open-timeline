@@ -16,7 +16,7 @@ use std::sync::Arc;
 pub async fn handle_get_entities_reduced(
     State(pool): State<Arc<Pool<Sqlite>>>,
 ) -> Result<Json<ReducedEntities>, ApiError> {
-    let mut transaction = pool.begin().await.unwrap();
+    let mut transaction = pool.begin().await?;
     Ok(Json(ReducedEntities::fetch_all(&mut transaction).await?))
 }
 
@@ -24,7 +24,7 @@ pub async fn handle_get_entities_reduced(
 pub async fn handle_get_entities_full(
     State(pool): State<Arc<Pool<Sqlite>>>,
 ) -> Result<Json<Vec<Entity>>, ApiError> {
-    let mut transaction = pool.begin().await.unwrap();
+    let mut transaction = pool.begin().await?;
     let mut full = Vec::new();
     for reduced in ReducedEntities::fetch_all(&mut transaction).await? {
         full.push(Entity::fetch_by_id(&mut transaction, &reduced.id()).await?);
@@ -36,6 +36,6 @@ pub async fn handle_get_entities_full(
 pub async fn handle_get_entities_tags(
     State(pool): State<Arc<Pool<Sqlite>>>,
 ) -> Result<Json<TagCounts>, ApiError> {
-    let mut transaction = pool.begin().await.unwrap();
+    let mut transaction = pool.begin().await?;
     Ok(Json(fetch_all_entity_tag_counts(&mut transaction).await?))
 }

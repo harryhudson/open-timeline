@@ -24,7 +24,7 @@ pub async fn handle_put_timeline(
     State(pool): State<Arc<Pool<Sqlite>>>,
     Json(mut payload): Json<TimelineEdit>,
 ) -> Result<Json<TimelineEdit>, ApiError> {
-    let mut transaction = pool.begin().await.unwrap();
+    let mut transaction = pool.begin().await?;
 
     // TODO: correct? What if the ID is set and already exists? Should error?
     payload.clear_id();
@@ -39,7 +39,7 @@ pub async fn handle_patch_timeline(
     State(pool): State<Arc<Pool<Sqlite>>>,
     Json(payload): Json<TimelineEdit>,
 ) -> Result<Json<TimelineEdit>, ApiError> {
-    let mut transaction = pool.begin().await.unwrap();
+    let mut transaction = pool.begin().await?;
     let result = patch(&mut transaction, payload).await?;
     transaction.commit().await?;
     Ok(result)
@@ -50,7 +50,7 @@ pub async fn handle_delete_timeline(
     State(pool): State<Arc<Pool<Sqlite>>>,
     Path(id_or_name): Path<String>,
 ) -> Result<Json<()>, ApiError> {
-    let mut transaction = pool.begin().await.unwrap();
+    let mut transaction = pool.begin().await?;
     match timeline_id_or_name(&mut transaction, id_or_name).await? {
         Some(IdOrName::Id(id)) => Ok(TimelineEdit::delete_by_id(&mut transaction, &id).await?),
         Some(IdOrName::Name(name)) => {
@@ -68,7 +68,7 @@ pub async fn handle_put_timeline_entity(
     Path(timeline_id_or_name_str): Path<String>,
     Path(entity_id_or_name_str): Path<String>,
 ) -> Result<Json<()>, ApiError> {
-    let mut transaction = pool.begin().await.unwrap();
+    let mut transaction = pool.begin().await?;
 
     let timeline_id = match timeline_id_or_name(&mut transaction, timeline_id_or_name_str).await? {
         Some(IdOrName::Id(id)) => id,
@@ -94,7 +94,7 @@ pub async fn handle_delete_timeline_entity(
     Path(timeline_id_or_name_str): Path<String>,
     Path(entity_id_or_name_str): Path<String>,
 ) -> Result<Json<()>, ApiError> {
-    let mut transaction = pool.begin().await.unwrap();
+    let mut transaction = pool.begin().await?;
 
     let timeline_id = match timeline_id_or_name(&mut transaction, timeline_id_or_name_str).await? {
         Some(IdOrName::Id(id)) => id,

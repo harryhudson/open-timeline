@@ -22,7 +22,7 @@ pub async fn handle_get_timelines_reduced(
     State(pool): State<Arc<Pool<Sqlite>>>,
     Query(params): Query<PartialNameQueryParams>,
 ) -> Result<Json<ReducedTimelines>, ApiError> {
-    let mut transaction = pool.begin().await.unwrap();
+    let mut transaction = pool.begin().await?;
 
     // TODO: should this be an error? or return all (with default limit?)
     if params.partial_name.is_empty() {
@@ -49,7 +49,7 @@ pub async fn handle_get_random_timelines(
     State(pool): State<Arc<Pool<Sqlite>>>,
     Query(params): Query<HashMap<String, String>>,
 ) -> Result<Json<ReducedTimelines>, ApiError> {
-    let mut transaction = pool.begin().await.unwrap();
+    let mut transaction = pool.begin().await?;
 
     let limit = params
         .get("limit")
