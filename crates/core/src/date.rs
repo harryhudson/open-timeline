@@ -7,6 +7,7 @@
 use serde::{Deserialize, Deserializer, Serialize};
 use std::cmp::Ordering;
 use thiserror::Error;
+use time::OffsetDateTime;
 
 /// The minimum year allowed in the OpenTimeline system
 pub const MIN_YEAR: i64 = -50000;
@@ -76,10 +77,9 @@ impl Day {
         self.0
     }
 
-    // TODO
-    // pub fn current() -> Self {
-    //     Day(0)
-    // }
+    pub fn current() -> Self {
+        Date::today().day().unwrap()
+    }
 }
 
 impl Month {
@@ -87,10 +87,9 @@ impl Month {
         self.0
     }
 
-    // TODO
-    // pub fn current() -> Self {
-    //     Month(0)
-    // }
+    pub fn current() -> Self {
+        Date::today().month().unwrap()
+    }
 }
 
 impl Year {
@@ -106,9 +105,8 @@ impl Year {
         Year(MAX_YEAR as i32)
     }
 
-    // TODO
     pub fn current() -> Self {
-        Year(2026)
+        Date::today().year()
     }
 }
 
@@ -142,6 +140,18 @@ impl TryFrom<i64> for Year {
         } else {
             Err(DateError::InvalidYear(value))
         }
+    }
+}
+
+impl From<time::Month> for Month {
+    fn from(month: time::Month) -> Self {
+        Self(month.into())
+    }
+}
+
+impl From<Month> for time::Month {
+    fn from(month: Month) -> Self {
+        Self::try_from(month.value()).unwrap()
     }
 }
 
@@ -179,10 +189,16 @@ impl<'de> Deserialize<'de> for Year {
 }
 
 impl Date {
-    // TODO: do this properly
     /// Today's date
     pub fn today() -> Self {
-        Self::from(None, None, 2026).unwrap()
+        let today = OffsetDateTime::now_utc();
+        let month: Month = today.month().into();
+        Self::from(
+            Some(today.day().into()),
+            Some(month.value().into()),
+            today.day().into(),
+        )
+        .unwrap()
     }
 
     /// Create a new [`Date`] if the result will be valid
@@ -421,5 +437,12 @@ mod test {
         let date_1 = Date::from(Some(1), Some(1), 234).unwrap();
         let date_2 = Date::from(Some(2), Some(1), 234).unwrap();
         assert!(date_2 > date_1);
+    }
+
+    #[test]
+    fn today() {
+        let today = Date::today();
+        println!("today = {}", today.as_long_date_format());
+        println!("today = {}", today.as_short_date_format());
     }
 }

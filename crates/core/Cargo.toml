@@ -1,6 +1,6 @@
 [package]
 name = "open-timeline-core"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2024"
 license = "MIT"
 description = "OpenTimeline core"
@@ -23,6 +23,7 @@ serde = { version = "1.0.217", features = ["derive"] }
 serde_json = "1.0.145"
 thiserror = "2.0.11"
 uuid = { version = "1.18.1", features = ["serde", "v4", "js"] }
+time = "0.3.47"
 
 [dependencies.sqlx]
 version = "0.8.3"
