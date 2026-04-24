@@ -462,6 +462,9 @@ impl Reload for EntityEditGui {
         if self.has_been_deleted() {
             return;
         }
+        if self.create_or_edit == CreateOrEdit::Create {
+            return;
+        }
         match self.entity_id {
             Some(entity_id) => {
                 self.requested_reload = true;
@@ -490,7 +493,16 @@ impl Reload for EntityEditGui {
                     self.rx_reload = None;
                     self.requested_reload = false;
                     match result {
-                        Ok(entity) => self.set_from_entity(entity),
+                        Ok(entity) => {
+                            // If the entity hasn't changed in the database, ignore the
+                            // newly fetched one (don't set)
+                            if let Some(database_entry) = self.database_entry.as_ref() {
+                                if *database_entry == entity {
+                                    return;
+                                }
+                            }
+                            self.set_from_entity(entity);
+                        }
                         Err(CrudError::IdNotInDb) => {
                             self.set_deleted_status(DeletedStatus::Deleted(Instant::now()))
                         }

@@ -520,6 +520,9 @@ impl Reload for TimelineEditGui {
         if self.has_been_deleted() {
             return;
         }
+        if self.create_or_edit == CreateOrEdit::Create {
+            return;
+        }
         match self.timeline_id {
             Some(timeline_id) => {
                 self.requested_reload = true;
@@ -547,7 +550,16 @@ impl Reload for TimelineEditGui {
                     self.rx_reload = None;
                     self.requested_reload = false;
                     match result {
-                        Ok(timeline) => self.set_from_timeline(timeline),
+                        Ok(timeline) => {
+                            // If the database hasn't changed in the database, ignore the
+                            // newly fetched one (don't set)
+                            if let Some(database_entry) = self.database_entry.as_ref() {
+                                if *database_entry == timeline {
+                                    return;
+                                }
+                            }
+                            self.set_from_timeline(timeline);
+                        }
                         Err(CrudError::IdNotInDb) => {
                             self.set_deleted_status(DeletedStatus::Deleted(Instant::now()))
                         }
